@@ -11,7 +11,8 @@
 물론 직접 컨테이너에서 application을 구동해보고 image로 commit하기 때문에 이미지의 동작을 보장할 수 있다는 점도 있음.
 
 
-![Dockerfile로 이미지를 생성하는 ][/home/sangjo/사진/dockerfile1.jpg]
+![Dockerfile로 이미지를 생성하는 방법][1]
+
 
 #### 도커는
 위와 같은 일련의 과정을 손쉽게 기록하고 수행할 수 있는 build 명령어를 제공합니다. 완성된 image를 생성하기 위해 컨테이너에 설치해야 하는 
@@ -25,3 +26,4 @@ Git과 같은 개발 도구를 통해 applicaion의 build 및 배포를 자동�
 
 
 
+[1]: /home/sangjo/사진/dockerfile1.jpg
