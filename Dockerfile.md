@@ -85,13 +85,13 @@ CMD apachectl -DFOREGROUND
 
 Dockerfile의 명령어는 위에서 아래로 한줄 씩 차례대로 실행됨. 
 
- *FROM
-   *생성할 image의 base가 될 image를 뜻함. FROM명령어는 Dockerfile을 작성할 때 반드시 한 번 이상 입력해야하며,
+  *FROM
+    *생성할 image의 base가 될 image를 뜻함. FROM명령어는 Dockerfile을 작성할 때 반드시 한 번 이상 입력해야하며,
    이미지 이름의 format은 docker run 명령어에서 image 이름을 사용했을 때와 같음. 사용하려는 image가 docker에 없다면
    자동으로 pull함.
 
- *MAINTAINER
-   *image를 생성한 개발자의 정보를 나타냄. 일반적으로 Dockerfile을 작성한 사람과 연락할 수 있는 email등을 입력
+  *MAINTAINER
+    *image를 생성한 개발자의 정보를 나타냄. 일반적으로 Dockerfile을 작성한 사람과 연락할 수 있는 email등을 입력
    단 Docker 1.13.0 버전 이후로 사용하지 않음.
 
  *Label
@@ -198,7 +198,7 @@ build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적
 
 전체 Dockerfile 명령어 목록을 확인하고 싶다면 도커 공식 사이트의 Dockerfile reference를 참고
 
-  *ENV 
+  *ENV
     * Dockerfile에서 사용될 환경변수를 지정. 설정한 환경변수는 ${ENV_NAME} 또는 $ENV_NAME의 형태로 사용할 수 있음.
     이 환경 변수는 Dockerfile 뿐 아니라 이미지에도 저장되므로 빌드된 이미지로 컨테이너를 생성하면 이 환경변수를 사용할 수 있음.
     다음 Dockerfile에서는 test라는 환경변수에 /home이라는 값을 설정함.
