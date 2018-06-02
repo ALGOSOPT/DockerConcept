@@ -158,3 +158,344 @@ EXPOSE를 토해 컨테이너가 사용해야할 port를 80번으로 설정하�
 ---
 # 3 Dockerfile 빌드
 
+### image 생성
+Dockerfile을 빌드.
+
+```
+# docker build -t mybuild:0.0 ./
+```
+
+-t 옵션은 생성될 iamge의 이름을 설정. 위 명령을 실행하면 mybuild:0.0 이라는 이름의 이미지가 생성됨. -t 옵션을 사용하지 않으면 16진수의 image가 저장됨.
+
+
+build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적으로 로컹에 저장된 Dockerfile을 사용하지만 외부 URL로부터 Dockerfile의 내용을 가져와 빌드 할 수도 있음 
+
+
+다음 명령어로 생성된 이미지로 컨테이너를 실행.
+```
+# docker run -d -P --name myserver mybuild:0.0
+```
+
+-P 옵션은 이미지에 설정된 EXPOSE의 모든 port를 host에 연결하도록 설정.
+즉, image를 생성하기 위한 Dockerfile을 작성하는 개발자로서는 EXPOSE를 이용해 이미지가 실제로 사용될 때
+어떤 포트가 사용돼야 하는지 명시할 수 있으며, 이미지를 사용하는 입장에서는 컨테이너의 application이 컨테이너 내부에서 어떤 포트를 사용하는지
+알 수 있게 됨.
+
+```
+#docker ps
+#docker port
+```
+
+
+---
+# 기타 Dockerfile 명령어
+
+전체 Dockerfile 명령어 목록을 확인하고 싶다면 도커 공식 사이트의 Dockerfile reference를 참고
+
+  *ENV 
+    * Dockerfile에서 사용될 환경변수를 지정. 설정한 환경변수는 ${ENV_NAME} 또는 $ENV_NAME의 형태로 사용할 수 있음.
+    이 환경 변수는 Dockerfile 뿐 아니라 이미지에도 저장되므로 빌드된 이미지로 컨테이너를 생성하면 이 환경변수를 사용할 수 있음.
+    다음 Dockerfile에서는 test라는 환경변수에 /home이라는 값을 설정함.
+  ```
+  #vi Dockerfile
+  
+  FROM ubuntu:14.04
+  ENV test /home
+  WORKDIR $test
+  RUN touch $test/mytouchfile
+  ```
+  
+  이미지를 빌드하고 컨테이러르 생성해 환경변수를 확인하면 /home 값이 적용된 것을 확인할 수 있음. 
+  run 명령어에서 -e 옵션을 사용해 같은 이름의 환경변수를 사용하면 기존의 값은 덮어 쓰여짐.
+  
+  ```
+  #docker build -t myenv:0.0 ./
+  
+  #docker run -i -t --name env_test myenv:0.0 /bin/bash
+  
+  /home# echo $test
+  
+  /home
+  ```
+  
+  ```
+  #docker run -i -t --name env_test_override -e test=myvalue myenv:0.0 /bin/bash
+  
+  /home# echo $test
+  
+  myvalue
+  ```
+  
+  
+  Dockerfile에서 환경변수의 값을 사용할 때 bash shell에서 사용하는 것처럼 값이 설정되지 않은 경우와 설정된 경우를 구분해 사용할 수 있음.
+  ${env_name:-value}는 env_name이라는 환경변수의 값이 설정되지 않았으면 이 환경변수의 값을 value로 사용함.
+  반대로, ${env_name:+value}는 env_name의 값이 설정되어 있으면 value를 값으로 사용하고, 값이 설정되지 않았다면 빈 문자열을 사용함.
+  
+  ```
+  #vi Dockerfile
+  FROM ubuntu:14.04
+  ENV my_env my_value
+  RUN echo ${my_env:-value} / ${my_env:+value} / ${my_env2:-value} / ${my_env2:+value}
+  ```
+  
+  위 내용으로 Dockerfile을 작성한 뒤 image를 빌드하면 RUN에 입력된 echo 명령어를 실행한 결과를 확인 할 수 있음.
+  
+  
+  
+  
+  * VOLUME 
+    * 빌드된 image로 컨테이너를 생성했을 때 host와 공유할 container 내부의 directory를 설정함. VOLUME ["/home/dir", "home/dir2"] 처럼
+    JSON 배열의 형식으로 여러 개를 사용하였거나 VOLUME /home/dir /home/dir2 로도 사용할 수 있음.
+    다음 예는 컨테이너 내부의 /home/volume directory를 host와 공유하도록 설정
+    
+    ```
+    #vi Dockerfile
+    
+    FROM ubuntu:14.04
+    RUN mkdir /home/volume
+    RUN echo test >> /home/volume/testfile
+    VOLUME /home/volume
+    ```
+    이미지를 빌드 한 뒤 컨테이너를 생성하고 볼륨의 목록을 확인해보면 볼륨이 생성된 것을 확인할 수 있.
+    
+    ```
+    # docker build -t myvolume:0.0. .
+    
+    # docker run -i -t -d --name volume_test myvolume:0.0
+    
+    # docker volume ls
+    ```
+    
+  * ARG
+    * build 명령어를 실행할 때 추가로 입력을 받아 Dockerfile 내에서 사용될 변수의 값을 설정.
+    다음 Dockerfile은 build 명령어에서 my_arg와 my_arg_2라는 이름의 변수를 추가로 입력받을 것이라고 ARG를 통해
+    명시합니다. ARG의 값은 기본적으로 build 명령어에서 입력 받아야 하지만 다음의 my_arg_2와 같이 기본값을 지정할 수도 있음.
+    
+    ```
+    #vi Dockerfile
+    FROM ubuntu:14.04
+    ARG my_arg
+    ARG my_arg_2=value2
+    RUN touch ${my_arg}/mytouch
+    ```
+    
+    위 내용을 Dockerfile로 저장한 뒤 이미지를 빌드함. build 명령어를 실행 할 때 --build-arg 옵션을 사용해서 Dockerfile ARG에 
+    값을 지정할 주 있음 
+    
+    ```
+    # docker build --build-arg my_arg=/home -t myarg:0.0 ./
+    ```
+    ARG와 ENV의 값을 사용하는 방법은 ${}로 같으므로 Dockerfile에서 ARG로 설정한 변수를 ENV에서 같은 이름으로 다시 정의하면 --build-arg 옵션에서 설정하는 값은 ENV에 의해 덮어쓰여집니다.
+    
+    위의 Dockerfile 예제에서는 $(my_arg)의 디렉터리에 mytouch 라는 파일을 생성했기 때문에 빌드된 이미지로 컨테이너를 생성해 확인하면 mytouch라는 이름의 파일을 확인할 수 있음.
+    
+    ```
+    #docker run -i -t --name arg_test myarg:0.0
+    
+    #ls /home/mytouch
+    ```
+    
+  *USER
+    * USER로 컨테이너 내에서 사용될 사용자 계정의 이름이나 UID를 설정하면 그 아래의 명령어는 해당 사용자의 권한으로 실행됨.
+    일반적으로 RUN으로 사용자의 그룹과 계정을 생성한 뒤 사용함. 루트 권한이 필요하지 않다면 USER를 사용하는 것을 궈장
+    ```
+    RUN groundadd -r author && useradd -r -g author alicek106
+    USER alicek106
+    ```
+    
+  *Onbuild
+    * 빌드된 이미지를 기반으로 하는 다른 이미지가 Dockerfile로 생성될 때 실행할 명령어를 추가.
+   ```
+   #vi Dockerfile
+   FROM ubuntu:14.04
+   RUN echo "this is onbuild test!"
+   ONBUILD RUN echo "onbuild!" >> /onbuild_file
+   ```
+   
+   ONBUILD에 RUN echo "onbuild!" >> /onbuild_file을 입력해서 onbuild!라는 명령어가 최상위 디렉터리의 onbuild_file에 저장되도록 함.
+   이 명령어는 이 Dockerfile을 빌드할 때 실행되지 않으며, 별도의 정보로 이미지에 저장될 뿐.
+   
+   
+   ```
+   #docker run -i -t --rm onbuild_test:0.0 ls /
+   ```
+   
+   이번에는 위에서 생성한 이미지를 기반으로 하는 새로운 이미지를 Dockerfile로 생성해보자. 다음과 같이 Dockerfile을 작성
+   ```
+   #vi Dockerfile2
+   FROM onbuild_test:0.0
+   RUN echo "this is child image"
+   ```
+   
+   그리고 빌드.
+   
+    ```
+    #docker build -f ./Dockerfile2 ./ -t onbuild_test:0.1
+    ```
+    
+    
+    ```
+    #docker run -i -t --rm onbuild_test:0.1 ls /
+    ```
+    
+    이처럼 ONBUILD는 ONBUILD, FROM, MAINTAINER를 제외한 RUN, ADD 등, 이미지가 빌드될 때 수행되야 하는 각종 Dockerfile의 명령어를 나중에 빌드될 이미지를 위해 미리 저장 해놓을 수 있다. 단, 이미지의 속성을 설정하는 다른 Dockerfile 명령어와는 달리 ONBUILD는 부모 이미지의 자식 이미지에만 적용되며, 자식 이미지는 ONBUILD 속성을 상속 받지 않음.
+    
+    
+  *STOPSIGNAL
+    *컨테이너가 정지 될  시스템 콜의 종류를 지정. 아무것도 설정하지 않으면 SIGTERM로 설정되지만 Dockerfile에 STOPSIGNAL을 정의해 컨테이너가 종료되는 데 사용될 신호를 선택할 수 있음.
+    
+    ```
+    FROM ubuntu:14.04
+    STOPSIGNAL SIGKILL
+    ```
+    
+  *HEALTHCHECK : HEALTHCHECK는 이미지로부터 생성된 컨테이너에서 동작하는 application의 상태를 체크하도록 설정. 
+  컨테이너 내부에서 동작 중인 application의 process가 종료되지는 않았으나 application이 동작하고 있지 않은 상태를 방지하기 위해 사용될 수 있음.
+  
+  다음 예제는 1분 마다 curl -f ...를 실행해 nginx 앱의 상태를 체크하여, 3초 이상이 소요되면 이를 한 번의 실패로 간주.
+  3번 이상의 타임 아웃이 발생하면 해당 container는 unhealthy 상태가 됨. 단, HEALTHCHECK에서 사용되는 명령어가 curl이므로 
+  컨테이너에 curl을 먼저 설치
+  ```
+  #vi Dockerfile
+  FROM nginx
+  RUN apt-get update -y && apt-get install curl -y
+  HEALTHCHECK --interval=1m --timeout=3s --retries=3 CMD curl -f http://localhost || exit 1
+  ```
+  
+  HEALTHCHECK에서 --interval은 컨테이너의 상태를 체크하는 주기. 마지막에 지정한 CMD curl .. 부분이 상태를 체크하는 명령어가 되고, 
+  --interval에 지정된 주기마다 이를 실행함. 상태를 체크하는 명령어가 --timeout에 설정한 시간을 초과하면 상테 체크에 실패한 것으로 간주하고 --retries의 횟수만큼 명령어를 반복함. --retries에 설정된 횟수만큼 상태 체크에 실패하면 해당 컨테이는 unhealthy 상태로 설정됨.
+  
+  이미지를 빌드한 후 해당 이미지로 컨테이너를 생성하면 docker ps 의 출력 중 해당 컨테이너의 STATUS에 정보가 추가 된 것을 확인 할 수 있음.
+  
+  
+  ```
+  #docker build ./ -t nginx:healthcheck
+  #docker run -d -P nginx:healthcheck
+  #docker ps
+  ```
+  
+  
+  상태 체크에 대한 로그는 컨테이너의 정보에 저장되므로 애플리케이션에 장애가 있을 때 해당 로그를 확인 할 수 있음.
+  
+  docker inspect의 출력 중 State - Health -Log 항목에서 확인 할 수 있음.
+  
+  
+  *SHELL
+    * Dockerfile에서 기본적으로 사용하는 shell은 리눅스에서 "/bin/sh -c", 윈도우에서 "cmd /S /C"
+    하지만 사용하려는 shell을 따로 지정하고 싶을 수도 있음. 
+    다음은 node를 기본 shell로 사용하도록 설정한 예
+    ```
+    FROM node
+    RUN echo hello, node!
+    SHELL ["/usr/local/bin/node"]
+    RUN -v
+    ```
+    
+    ```
+    #docker build ./ -t nodetest
+    ```
+    
+    
+    
+  *COPY
+    *COPY는 로컬 디렉터리에서 읽어 들인 컨텍스트로부터 이미지에 파일을 복사하는 역할을 함.
+    COPY를 사용하는 형식은 ADDdhk rkxek.
+    
+    
+    ```
+    COPY test.html /home/
+    COPY ["test.html", "/home/"]
+    ```
+    그렇다면 ADD와 COPY의 차이점은 없는 것처럼 보임. 사실 ADD와 COPY의 기능은 그 자체로만 봤을 때는 같음.
+    그러나 COPY는 로컬의 파일만 이미지에 추가할 수 있지만 ADD는 외부 URL 및 tar 파일에서도 파일을 추가할 수 있다는 점에서 다름.
+    
+    즉, COPY의 기능이 ADD에 포함되는 셈.
+    
+    하지만 ADD를 사용하는 것은 그다지 권장하지 않음 그 이유는  ADD로 URL이나 tar파일을 추가할 경우 이미지에 정확히 어떤 파일이 추가 될지 알 수 없기 때문. 그에 비해  COPY는 로컬 context로부터 file을 직접 추가하기 때문에 빌드 시점에서도 어떤 파일이 추가 될지 명확.
+    
+    
+
+
+  * ENTRYPOINT
+    * CMD는 컨테이너가 시작될 때 실행할 명령어를 설정. 이는 docker run 명령어에서 맨 뒤에 입력했던 cmd와 같은 역할을 함. 
+    CMD와 비슷한 ENTRYPOINT라는 것이 있음.
+    
+    * ENTRYPOIN와 CMD의 차이점
+    entrypoint는 커맨드와 동일하게 컨테이너가 시작될 때 수행할 명령을 지정한다는 점에서 같음 
+    그러나 entrypoint는 커멘드를 인자로 받아 사용할 수 있는 스크립트의 역할을 할 수 있다는 점에서 다름.
+    
+    
+    다음예는 ubuntu:14.04 이미지로 containaer를 생성하고 container가 시작될 때 실행될 명령어를 /bin/bash로 설정.
+   ```
+   #docker run -i -t --name no_entrypoint ubuntu:14.04 /bin/bash
+   ```
+   
+   지금까지 컨테이너를 생성했던 것처럼 컨테이너 내부로 들어왔으며,  cmd로 bash shell을 실행하도록 설정했으므로 shell을 통해 표준입출력을
+   할 수 있음. 그렇다면 entrypoint로 특정 명령ㅇ어를 넣으면
+   
+   ```
+   #docker run -i -t --entrypoint="echo" --name yes_entrypoint ubuntu:14.04 /bin/bash
+   ```
+   
+   /bin/bash 라는 내용이 터미널에 출력됨. 즉, container에 entrypoint가 설정되면 run 명령어의 매 마지막에 
+   입력된 cmd를 인자로 삼아 명령어를 출력.
+   그러므로 위 예에서 echo /bin/bash 가 컨테이너에서 실행되어 /bin/bash가 출력된 것.
+   
+   entrypoint가 설정되지 않았다면 cmd에 설정되 명령어를 그대로 실행하지만 entrypoint가 설정됐다면 cmd는 단지 
+   entrypoint에 대한 인자의 기능을 함.
+   
+   * entrypoint를 이용한 script 실행
+   앞에서 살펴본 것 처럼 entrypoint에 하나의 명령어만 입력할 수도 있지만 일반적으로는 script file을 entrypoint의 인자로 사용해 컨테이너
+   가 시작될 때 마다 해당 script file을 실행하도록 설정. script file을 entrypoint에 설정하려면 script file의 이름을 entrypoint의
+   인자로 입력
+   
+   ```
+   #docker run -i -t --name entrypoint_sh --entrypoint="/test.sh" ubuntu:14.04 /bin/bash
+   ```
+   
+   단 실행할 script 파일은 컨테이너 내부에 존재해야함. 
+   
+   ```
+   #vi Dockerfile
+   FROM ubuntu:14.04
+   RUN apt-get update
+   RUN apt-get install apache2 y
+   ADD entrypoin.sh /entrypoint.sh
+   RUN chmod +x /entrypoint.sh
+   ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+   ```
+   
+   entrypoint.sh파일의 내용
+   ```
+   #vi entrypoint.sh
+   echo $1 $2
+   apachectl -DFOREGROUND
+   ```
+   
+   ```
+   #docker build -t entrypoint_image:0.0 ./
+   
+   #docker run -d --name entrypoint_apache_server entrypoint_image:0.0 first second
+   
+   #docker logs entrypoint_apache_server
+   
+   
+   
+   
+---
+# 5. Dockerfile로 빌드 할 때 주의할 점
+
+Dockerfile을 사용하는 데도 좋은 습관(practice)이라는 것이 있음. 예를 들어, 하나의 명령어를 \로 나눠서 가독성을 높일 수 있거나
+.dockerignore 파이릉ㄹ 작성해 불필요한 file을 빌드 컨텍스트에 포함하지 않는 것이 있음.
+또는 build cache를 이용해 기존에 사용했던 이미지 layer 를 재사용하느 방법도 Dockerfile을 활용하는 방법 중 하나.
+
+```
+#vi Dockerfile
+...
+RUN apt-get install package-1 \
+package-2 \
+package-3
+```
+ 
+ 
+다음은 Dockerfile을 
