@@ -83,36 +83,36 @@ CMD apachectl -DFOREGROUND
 
 Dockerfile의 명령어는 위에서 아래로 한줄 씩 차례대로 실행됨. 
 
-*FROM
+ *FROM
   *생성할 image의 base가 될 image를 뜻함. FROM명령어는 Dockerfile을 작성할 때 반드시 한 번 이상 입력해야하며,
    이미지 이름의 format은 docker run 명령어에서 image 이름을 사용했을 때와 같음. 사용하려는 image가 docker에 없다면
    자동으로 pull함.
 
-*MAINTAINER
+ *MAINTAINER
   *image를 생성한 개발자의 정보를 나타냄. 일반적으로 Dockerfile을 작성한 사람과 연락할 수 있는 email등을 입력
    단 Docker 1.13.0 버전 이후로 사용하지 않음.
 
-*Label
+ *Label
   * image에 meta data를 추가. meta data는 "key:value"의 형태로 저장되며, 여러 개의 meta data가 저장될 수 있음.
   추가된 meta data는 docker inspect 명렁어로 image의 정보를 구해서 확인 할 수 있음.
   
-*RUN
+ *RUN
   * image를 만들기 위해 container 내부에서 명령어를 실행함. 예제에서는 apt-get update와 apt-get intall apache2 명령어를 실행하기 때문에
   아파치 웹 서버가 설치된 이미지가 생성. 
   
-*ADD
-  * 파일을 이미지에 추가 추가하는 file은 Dockerfile이 위치한 디렉터리인 Context에서 가져옴. 
+ *ADD
+   * 파일을 이미지에 추가 추가하는 file은 Dockerfile이 위치한 디렉터리인 Context에서 가져옴. 
   Context에 대한 설명은 나중에 하고 지금은 Dockerfile이 위치한 Directory에서 file을 가져온다고 이해하면된다. 
   예제에서는 Dockerfile이 위치한 directory에서 test.html file을 imagedml /var/www/html directory에 추가함.
   
-*WORKDIR
-  * 명령어를 실행할 디렉터리를 나타냄. bash shell에서 cd 명령어를 입력하는 것과 똑같은 기능을 함.
+ *WORKDIR
+   * 명령어를 실행할 디렉터리를 나타냄. bash shell에서 cd 명령어를 입력하는 것과 똑같은 기능을 함.
 
-*EXPOSE
-  * Dockerfile의 빌드로 생성된 image에서 노출할 port를 설정. 그러나 EXPOSE를 설정한 image로 container를 생성했다고 해서 반드시 이 port가 호스트의 port와 binding되는 것은 아니며, 단지 container의 80번 port를 사용할 것임을 나타내는 것. EXPOSE는 컨테니러를 생성하는 run 명령어에서 모든 노출된 컨테이너의 포트를 호스트에 publish하는 -p flag와 함께 사용됨. 
+ *EXPOSE
+   * Dockerfile의 빌드로 생성된 image에서 노출할 port를 설정. 그러나 EXPOSE를 설정한 image로 container를 생성했다고 해서 반드시 이 port가 호스트의 port와 binding되는 것은 아니며, 단지 container의 80번 port를 사용할 것임을 나타내는 것. EXPOSE는 컨테니러를 생성하는 run 명령어에서 모든 노출된 컨테이너의 포트를 호스트에 publish하는 -p flag와 함께 사용됨. 
   
-*CMD
-  * CMD는 컨테이너가 시작될 때마다 실행할 CMD를 설정하며, Dockerfile에서 한 번만 사용할 수 있음.
+ *CMD
+   * CMD는 컨테이너가 시작될 때마다 실행할 CMD를 설정하며, Dockerfile에서 한 번만 사용할 수 있음.
  
  
  
