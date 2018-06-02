@@ -74,7 +74,9 @@ EXPOSE 80
 CMD apachectl -DFOREGROUND
 ```
 
-`docker 엔진은 Dockerfile을 읽어 들일 때 기본적으로 현재 directory에 들어 있는 Dockerfile이라는 이름을 가진 file을 선택함. 따라서 아래 예제에서는 Dockerfile이라는 이름으로 file을 저장. Dockerfile은 Empty 디렉터리에 저장하는 것이 좋은데, 이는 이미지를 빌드할 때 사용되는 Context 때문.`
+`docker 엔진은 Dockerfile을 읽어 들일 때 기본적으로 현재 directory에 들어 있는 Dockerfile이라는 이름을 가진 file을 선택함.
+따라서 아래 예제에서는 Dockerfile이라는 이름으로 file을 저장. Dockerfile은 Empty 디렉터리에 저장하는 것이 좋은데,
+이는 이미지를 빌드할 때 사용되는 Context 때문.`
 
 
 #### Dockerfile은 한 줄이 하나의 명렁어가 되고
@@ -97,8 +99,8 @@ Dockerfile의 명령어는 위에서 아래로 한줄 씩 차례대로 실행됨
   추가된 meta data는 docker inspect 명렁어로 image의 정보를 구해서 확인 할 수 있음.
   
  *RUN
-  * image를 만들기 위해 container 내부에서 명령어를 실행함. 예제에서는 apt-get update와 apt-get intall apache2 명령어를 실행하기 때문에
-  아파치 웹 서버가 설치된 이미지가 생성. 
+  * image를 만들기 위해 container 내부에서 명령어를 실행함. 예제에서는 apt-get update와 apt-get intall apache2 명령어를 
+  실행하기 때문에 아파치 웹 서버가 설치된 이미지가 생성. 
   
  *ADD
    * 파일을 이미지에 추가 추가하는 file은 Dockerfile이 위치한 디렉터리인 Context에서 가져옴. 
@@ -109,7 +111,9 @@ Dockerfile의 명령어는 위에서 아래로 한줄 씩 차례대로 실행됨
    * 명령어를 실행할 디렉터리를 나타냄. bash shell에서 cd 명령어를 입력하는 것과 똑같은 기능을 함.
 
  *EXPOSE
-   * Dockerfile의 빌드로 생성된 image에서 노출할 port를 설정. 그러나 EXPOSE를 설정한 image로 container를 생성했다고 해서 반드시 이 port가 호스트의 port와 binding되는 것은 아니며, 단지 container의 80번 port를 사용할 것임을 나타내는 것. EXPOSE는 컨테니러를 생성하는 run 명령어에서 모든 노출된 컨테이너의 포트를 호스트에 publish하는 -p flag와 함께 사용됨. 
+   * Dockerfile의 빌드로 생성된 image에서 노출할 port를 설정. 그러나 EXPOSE를 설정한 image로 container를 생성했다고 해서 반드시 
+   이 port가 호스트의 port와 binding되는 것은 아니며, 단지 container의 80번 port를 사용할 것임을 나타내는 것. EXPOSE는 컨테이너를 
+   생성하는 run 명령어에서 모든 노출된 컨테이너의 포트를 호스트에 publish하는 -p flag와 함께 사용됨. 
   
  *CMD
    * CMD는 컨테이너가 시작될 때마다 실행할 CMD를 설정하며, Dockerfile에서 한 번만 사용할 수 있음.
@@ -165,10 +169,12 @@ Dockerfile을 빌드.
 # docker build -t mybuild:0.0 ./
 ```
 
--t 옵션은 생성될 iamge의 이름을 설정. 위 명령을 실행하면 mybuild:0.0 이라는 이름의 이미지가 생성됨. -t 옵션을 사용하지 않으면 16진수의 image가 저장됨.
+-t 옵션은 생성될 iamge의 이름을 설정. 위 명령을 실행하면 mybuild:0.0 이라는 이름의 이미지가 생성됨. -t 옵션을 사용하지 않으면 16진수의 
+image가 저장됨.
 
 
-build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적으로 로컹에 저장된 Dockerfile을 사용하지만 외부 URL로부터 Dockerfile의 내용을 가져와 빌드 할 수도 있음 
+build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적으로 로컹에 저장된 Dockerfile을 사용하지만 외부 URL로부터 Dockerfile의 
+내용을 가져와 빌드 할 수도 있음 
 
 
 다음 명령어로 생성된 이미지로 컨테이너를 실행.
@@ -244,8 +250,8 @@ build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적
   
   
   * VOLUME 
-    * 빌드된 image로 컨테이너를 생성했을 때 host와 공유할 container 내부의 directory를 설정함. VOLUME ["/home/dir", "home/dir2"] 처럼
-    JSON 배열의 형식으로 여러 개를 사용하였거나 VOLUME /home/dir /home/dir2 로도 사용할 수 있음.
+    * 빌드된 image로 컨테이너를 생성했을 때 host와 공유할 container 내부의 directory를 설정함. VOLUME ["/home/dir", "home/dir2"] 
+    처럼 JSON 배열의 형식으로 여러 개를 사용하였거나 VOLUME /home/dir /home/dir2 로도 사용할 수 있음.
     다음 예는 컨테이너 내부의 /home/volume directory를 host와 공유하도록 설정
     
     ```
@@ -285,9 +291,11 @@ build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적
     ```
     # docker build --build-arg my_arg=/home -t myarg:0.0 ./
     ```
-    ARG와 ENV의 값을 사용하는 방법은 ${}로 같으므로 Dockerfile에서 ARG로 설정한 변수를 ENV에서 같은 이름으로 다시 정의하면 --build-arg 옵션에서 설정하는 값은 ENV에 의해 덮어쓰여집니다.
+    ARG와 ENV의 값을 사용하는 방법은 ${}로 같으므로 Dockerfile에서 ARG로 설정한 변수를 ENV에서 같은 이름으로 다시 정의하면 
+    --build-arg 옵션에서 설정하는 값은 ENV에 의해 덮어쓰여집니다.
     
-    위의 Dockerfile 예제에서는 $(my_arg)의 디렉터리에 mytouch 라는 파일을 생성했기 때문에 빌드된 이미지로 컨테이너를 생성해 확인하면 mytouch라는 이름의 파일을 확인할 수 있음.
+    위의 Dockerfile 예제에서는 $(my_arg)의 디렉터리에 mytouch 라는 파일을 생성했기 때문에 빌드된 이미지로 컨테이너를 생성해 
+    확인하면 mytouch라는 이름의 파일을 확인할 수 있음.
     
     ```
     #docker run -i -t --name arg_test myarg:0.0
@@ -338,11 +346,14 @@ build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적
     #docker run -i -t --rm onbuild_test:0.1 ls /
     ```
     
-    이처럼 ONBUILD는 ONBUILD, FROM, MAINTAINER를 제외한 RUN, ADD 등, 이미지가 빌드될 때 수행되야 하는 각종 Dockerfile의 명령어를 나중에 빌드될 이미지를 위해 미리 저장 해놓을 수 있다. 단, 이미지의 속성을 설정하는 다른 Dockerfile 명령어와는 달리 ONBUILD는 부모 이미지의 자식 이미지에만 적용되며, 자식 이미지는 ONBUILD 속성을 상속 받지 않음.
+    이처럼 ONBUILD는 ONBUILD, FROM, MAINTAINER를 제외한 RUN, ADD 등, 이미지가 빌드될 때 수행되야 하는 각종 Dockerfile의 
+    명령어를 나중에 빌드될 이미지를 위해 미리 저장 해놓을 수 있다. 단, 이미지의 속성을 설정하는 다른 Dockerfile 명령어와는 달리 
+    ONBUILD는 부모 이미지의 자식 이미지에만 적용되며, 자식 이미지는 ONBUILD 속성을 상속 받지 않음.
     
     
   *STOPSIGNAL
-    *컨테이너가 정지 될  시스템 콜의 종류를 지정. 아무것도 설정하지 않으면 SIGTERM로 설정되지만 Dockerfile에 STOPSIGNAL을 정의해 컨테이너가 종료되는 데 사용될 신호를 선택할 수 있음.
+    *컨테이너가 정지 될  시스템 콜의 종류를 지정. 아무것도 설정하지 않으면 SIGTERM로 설정되지만 Dockerfile에 STOPSIGNAL을 정의해 
+    컨테이너가 종료되는 데 사용될 신호를 선택할 수 있음.
     
     ```
     FROM ubuntu:14.04
@@ -350,7 +361,8 @@ build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적
     ```
     
   *HEALTHCHECK : HEALTHCHECK는 이미지로부터 생성된 컨테이너에서 동작하는 application의 상태를 체크하도록 설정. 
-  컨테이너 내부에서 동작 중인 application의 process가 종료되지는 않았으나 application이 동작하고 있지 않은 상태를 방지하기 위해 사용될 수 있음.
+  컨테이너 내부에서 동작 중인 application의 process가 종료되지는 않았으나 application이 동작하고 있지 않은 상태를 방지하기 
+  위해 사용될 수 있음.
   
   다음 예제는 1분 마다 curl -f ...를 실행해 nginx 앱의 상태를 체크하여, 3초 이상이 소요되면 이를 한 번의 실패로 간주.
   3번 이상의 타임 아웃이 발생하면 해당 container는 unhealthy 상태가 됨. 단, HEALTHCHECK에서 사용되는 명령어가 curl이므로 
@@ -363,7 +375,8 @@ build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적
   ```
   
   HEALTHCHECK에서 --interval은 컨테이너의 상태를 체크하는 주기. 마지막에 지정한 CMD curl .. 부분이 상태를 체크하는 명령어가 되고, 
-  --interval에 지정된 주기마다 이를 실행함. 상태를 체크하는 명령어가 --timeout에 설정한 시간을 초과하면 상테 체크에 실패한 것으로 간주하고 --retries의 횟수만큼 명령어를 반복함. --retries에 설정된 횟수만큼 상태 체크에 실패하면 해당 컨테이는 unhealthy 상태로 설정됨.
+  --interval에 지정된 주기마다 이를 실행함. 상태를 체크하는 명령어가 --timeout에 설정한 시간을 초과하면 상테 체크에 실패한 것으로 
+  간주하고 --retries의 횟수만큼 명령어를 반복함. --retries에 설정된 횟수만큼 상태 체크에 실패하면 해당 컨테이는 unhealthy 상태로 설정됨.
   
   이미지를 빌드한 후 해당 이미지로 컨테이너를 생성하면 docker ps 의 출력 중 해당 컨테이너의 STATUS에 정보가 추가 된 것을 확인 할 수 있음.
   
@@ -411,7 +424,9 @@ build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적
     
     즉, COPY의 기능이 ADD에 포함되는 셈.
     
-    하지만 ADD를 사용하는 것은 그다지 권장하지 않음 그 이유는  ADD로 URL이나 tar파일을 추가할 경우 이미지에 정확히 어떤 파일이 추가 될지 알 수 없기 때문. 그에 비해  COPY는 로컬 context로부터 file을 직접 추가하기 때문에 빌드 시점에서도 어떤 파일이 추가 될지 명확.
+    하지만 ADD를 사용하는 것은 그다지 권장하지 않음 그 이유는  ADD로 URL이나 tar파일을 추가할 경우 이미지에 정확히 어떤 파일이 
+    추가 될지 알 수 없기 때문. 그에 비해  COPY는 로컬 context로부터 file을 직접 추가하기 때문에 빌드 시점에서도 어떤 파일이 
+    추가 될지 명확.
     
     
 
@@ -445,9 +460,9 @@ build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적
    entrypoint에 대한 인자의 기능을 함.
    
    * entrypoint를 이용한 script 실행
-   앞에서 살펴본 것 처럼 entrypoint에 하나의 명령어만 입력할 수도 있지만 일반적으로는 script file을 entrypoint의 인자로 사용해 컨테이너
-   가 시작될 때 마다 해당 script file을 실행하도록 설정. script file을 entrypoint에 설정하려면 script file의 이름을 entrypoint의
-   인자로 입력
+   앞에서 살펴본 것 처럼 entrypoint에 하나의 명령어만 입력할 수도 있지만 일반적으로는 script file을 entrypoint의 인자로 사용해 
+   컨테이가 시작될 때 마다 해당 script file을 실행하도록 설정. script file을 entrypoint에 설정하려면 script file의 이름을 
+   entrypoint의 인자로 입력
    
    ```
    #docker run -i -t --name entrypoint_sh --entrypoint="/test.sh" ubuntu:14.04 /bin/bash
@@ -478,7 +493,7 @@ build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적
    #docker run -d --name entrypoint_apache_server entrypoint_image:0.0 first second
    
    #docker logs entrypoint_apache_server
-   
+   ```
    
    
    
@@ -498,4 +513,79 @@ package-3
 ```
  
  
-다음은 Dockerfile을 
+다음은 Dockerfile을 사용할 때 이미지를 비효율적으로 빌드하는 예.
+fallocate라는 명령어는 100MB 크기의 파일을 가상으로 만들어 container에 할당하고, 
+이를 image layer로 build함. 그리고 이 file을 rm 명령어로 삭제.
+즉, 빌드가 완료되어 최종 생성된 이미지에는 100MB 크기의 파일인 /dummy가 존재하지 않음
+
+잘못된 Dockerfile의 활용
+```
+#vi Dockerfile
+FROM ubuntu:14.04
+RUN mkdir /test
+RUN fallocate -l 100m /test/dummy
+RUN rm /test/dummy
+```
+
+위의 Dockerfile로 빌드한 이미지의 크기는 어떻게 될까?
+ubuntu:14.04 이미지에 100MB를 더한 약 290MB 정도를 차지하게 됨
+
+```
+#docker build -t falloc_100mb:0.0 .
+
+#docker images
+```
+
+
+그러나 위에서 빌드한 image로 컨테이너를 생성하면 100MB크기의 /test/dummy라는 file은 존재하지 않음
+Dockerfile에서 RUN rm /test/dummy 명령어로 이 파일을 삭제한 상태로 이미지를 빌드 했기 때문
+이는 컨테이너를 이미지로 생성할 때 컨테이너에서 변경된 사항만 새로운 이미지 레이어로 생성하는
+방식의 단점 중 하나. RUN rm /test/dummy 명령어를 수행해 100MB 크기의 파일을 삭제하더라도 이는 파일을
+삭제했다 라는 변경사항으로서의 레이어로 새롭게 저장될 뿐, 실제 100MB 크기의 파일은 이전 레이어에 남아있기 때문
+즉, 실제로 컨테이너에 사용하지 못하는 파일이 이미지 레이어로 존재하기 때문에 저장 공간은 차지하지만 실제로는
+의미가 없는 저장 공간일 수도 있음.
+
+이를 방지하는 방법은 매우 간단. Dockerfile을 작성할 때 &&로 각 RUN명령을 하나로 묶는 것.
+
+즉, 하나의 RUN으로 여러 개의 명령어를 실행하도록 작성하면됨.
+
+```
+# vi Dockerfile
+FROM ubuntu:14.04
+RUN mkdir /test && \
+fallocate -l 100m /test/dummy && \
+rm /test/dummy
+```
+
+
+RUN이 하나의 이미지 레이어가 된다는 것을 생각해보면 매우 간단한 해결책.
+이 방법은 이미지 레이어 수를 줄이는 데도 활용할 수 있음. 여러 개의 RUN명령어가 하나로 묶일 수 있다면
+이미지의 layer의 개수 또한 하나로 줄어들기 때문.
+
+
+
+다른 사람이 빌드한 image에 불필요한 image layer가 들어있다면 해당 image로 컨테이너를 생성하고 docker export, import 명령어를
+사용해 컨테이너를 이미지로 만듦으로써 이미지의 크기를 줄일 수 있음.export file을 import 해서 다시 docker에
+저장하면 layer가 한개로 줄어 듦.
+
+그러나 이전 이미지에 저장돼 있던 각종 이미지 설정은 잃어버리게 되므로 주의해야함. 
+
+```
+#docker run -i -t -d --name temp falloc_100mb:0.0
+
+#docker export temp | docker import - falloc_100mb:0.1
+
+#docker run -i -t -d --name temp2 falloc_100mb:0.1
+```
+
+
+---
+
+## docker layer
+도커의 image layer 구조는 위의 경우에 단점으로 작용할 수도 있지만 잘만 활용하면 장점으로 작용할 수 있음.
+예를 들어 A, B 애플리케이션이 500MB 크기의 같은 라이브러리를 사용해야 한다면 각 application의 image에 library를
+각기 설치하기 보다는 500MB 크기의 라이브러리 이미지를 미리 만들어 놓은 다음 이 이미지를 이용해 A,B 애플리케이션의 이미지는
+이 library오 인해 각각 500MB를 차지해 1GB의 저장공간을 사용하는 것이 아닌, 500MB의 이미지 레이어를 공유하게 됨.
+
+또한 이미지를 배포할 때에도 애플리케이션에 해당하는 변경된 부분만 내려받으면 되므로 이미지를 빠르게 전송할 수 있음.
+
