@@ -26,4 +26,4 @@ Git과 같은 개발 도구를 통해 applicaion의 build 및 배포를 자동�
 
 
 
-[1]: /home/sangjo/사진/dockerfile1.jpg
+[1]: ./home/sangjo/사진/dockerfile1.jpg
