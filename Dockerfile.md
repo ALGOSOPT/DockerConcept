@@ -198,8 +198,8 @@ build 명령어의 끝에는 Dockerfile이 저장된 경로를 입력. 일반적
 
 전체 Dockerfile 명령어 목록을 확인하고 싶다면 도커 공식 사이트의 Dockerfile reference를 참고
 
-  *ENV
-    * Dockerfile에서 사용될 환경변수를 지정. 설정한 환경변수는 ${ENV_NAME} 또는 $ENV_NAME의 형태로 사용할 수 있음.
+ *ENV
+  * Dockerfile에서 사용될 환경변수를 지정. 설정한 환경변수는 ${ENV_NAME} 또는 $ENV_NAME의 형태로 사용할 수 있음.
     이 환경 변수는 Dockerfile 뿐 아니라 이미지에도 저장되므로 빌드된 이미지로 컨테이너를 생성하면 이 환경변수를 사용할 수 있음.
     다음 Dockerfile에서는 test라는 환경변수에 /home이라는 값을 설정함.
   ```
