@@ -11,7 +11,7 @@
 물론 직접 컨테이너에서 application을 구동해보고 image로 commit하기 때문에 이미지의 동작을 보장할 수 있다는 점도 있음.
 
 
-![Dockerfile로 이미지를 생성하는 방법](./home/sangjo/사진/dockerfile1.jpg)
+![Dockerfile로 이미지를 생성하는 방법](https://github.com/ALGOSOPT/DockerConcept/picture/dockerfile1.jpg)
 
 
 #### 도커는
