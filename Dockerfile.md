@@ -11,7 +11,7 @@
 물론 직접 컨테이너에서 application을 구동해보고 image로 commit하기 때문에 이미지의 동작을 보장할 수 있다는 점도 있음.
 
 
-![Dockerfile로 이미지를 생성하는 방법](https://github.com/ALGOSOPT/DockerConcept/picture/dockerfile1.jpg)
+![ScreenShot](https://github.com/ALGOSOPT/DockerConcept/picture/dockerfile1.jpg)
 
 
 #### 도커는
@@ -31,7 +31,7 @@ Dockerfile은 app을 개발하는 용도 외에도 여러 목적으로 사용될
 생성한 image를 Docker Hub 등을 통해 배포할 때 이미지 자체를 배포하는 대신 image를 생성하는 방법을 기록해 놓는 Dockerfile을
 배포할 수 있음. 
 배포 되는 image를 신뢰할 수 없거나 직접 이미지를 생성해서 사용하고 싶다면 Docker Hub에 올려져 있는 Dockerfile로 빌드하는 것도
-하나의 방법. 실제로 Docker Hub에 올려져 있는 대부분의 Image는 __Dockerfile__을 함께 제공하고 있음.
+하나의 방법. 실제로 Docker Hub에 올려져 있는 대부분의 Image는 **Dockerfile** 을 함께 제공하고 있음.
 
 
 ### Application을 컨테이너화하기 위한 
