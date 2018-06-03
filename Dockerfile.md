@@ -11,7 +11,7 @@
 물론 직접 컨테이너에서 application을 구동해보고 image로 commit하기 때문에 이미지의 동작을 보장할 수 있다는 점도 있음.
 
 
-![ScreenShot](https://github.com/ALGOSOPT/DockerConcept/picture/dockerfile1.jpg)
+![ScreenShot](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/dockerfile1.jpg)
 
 
 #### 도커는
