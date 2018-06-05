@@ -229,5 +229,68 @@ Container는 가상 머신과 마찬가지로 가상 IP 주소를 할당받음.
 ```
 docker의 NAT IP인 172.17.0.2를 할당받은 eth0 인터페이스와 local host인 lo interface가 있음.
 
-아무
+아무런 설정을 하지 않았다면 이 Container는 외부에서 접근할 수 없으며 Docker가 설치된 host에서만 접근할 수 있음.
+
+외부에 Container의 App을 노출하기 위해서는 eth0의 IP와 port를 host의 ip와 port에 binding 해야함.
+
+
+
+
+Container에서 host로 빠져나온 뒤 다음 명령어를 입력해 Container를 생성.
+```
+#docker run -i -t --name mywebserver -p 80:80 ubuntu:14.04
+```
+-p 옵셔은 container의 port를 host의 port와 binding해서 연결할 수 있게 설정
+-p 옵션의 입력 형식은 다음과 같음.
+
+`[host port]:[container port]`
+
+host의 특정 IP를 사용하려면 `192.168.0.100:7777:80'과 같이 binding할 IP와 port를 명시.
+또한 여러개의 포트를 외부에 개방하려면 -p 옵션을 여러번 써서 설정.
+
+```
+# docker run -i -t -p 3306:3306 -p 192.168.0.100:7777:80 ubuntu:14.04
+```
+
+---
+
+### 2.5 Container Application 구축
+
+대부분의 서비스는 단일 프로그램으로 동작하지 않음. 여러 agent와 database 등과 연결되어 완전한 서비스로써 
+동작하는 것이 일반적입니다 이런 서비스를 Containerize할 때 여러개의 Application을 한 Container 안에
+설치 할 수도 있음. 그러나 Container에 Application을 하나만 동작시키면 Container간의 독립성을 보장함과
+동시에 Application의 버전관리, 소스코드 모듈화 등이 더욱 쉬워짐.
+
+
+
+
+database와 web server를 container하나에 설치할 수도 있음. 그러나 database container와 web server container를
+구분하는 편이 docker image를 관리하고 component의 독립성을 유지하기가 쉬움.
+
+이 같은 구조는 여러 docker 커뮤니티 뿐 아니라 docker 공식 홈페이지에서도 권장하는 구조.
+
+한 container에서 process 하나만 실행하는 것이 docker의 철학이기 때문.
+
+
+
+
+이번에는 database와 word press web server container를 연동해 word press기반 블로그 서비스를 만들어 보자.
+
+```
+# docker run -d --name wordpresdb -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=wordpress mysql:5.7
+```
+
+```
+# docker run -d -e WORDPRESS_DB_PASSWORD=password --name wordpress --link wordpressdb:mysql -p 80 wordpress
+```
+
+첫 번째 명령어는 mysql 이미지를 사용해 database container를, 두 버째 명령어는 미리 준비된 wordpress 이밎지를 이용해 
+wordpress web server container를 생성함. wordpress web server container의 -p 옵션에서 80을 입력했으므로
+host의 port 중 하나와 container의 80번 port가 연결됨.
+
+```
+# docker ps
+```
+docker ps 명령어로 host의 어느 port와 연결됐는지 확인.
+
 
