@@ -94,3 +94,54 @@ Container와 host의 file system은 서로 독립적이므로 ls 명령어로 fi
 Container 내부에서 Container를 정지시키면서 빠져나오는 방법은 exit, Ctrl + D.
 Container 내부에서 Container를 정지하지 않고 빠져나오는 방법은 Ctrl + P, Q
 
+
+
+pull 명령어.
+Docker 공식 image 저장소에서 centos:7 이미지를 내려 받음.
+```
+#docker pull centos:7
+```
+
+
+images 명령어는 Local Docker Engine에 존재하는 image의 목록을 출력함.
+```
+# docker images
+```
+
+
+
+컨테이너를 생성할 때, create 명령어를 사용할 수도 있음.
+
+```
+# docker create -i -t --name mycentos centos:7
+```
+--name 옵션으로 컨테이너의 이름을 설정.
+
+create 명령어는 Container를 생성할 뿐 Container로 들어가지는 않음.
+
+
+start 명령어.
+```
+# docker start mycentos
+```
+Container를 시작.
+
+
+attath
+```
+# docker attath mycentos
+```
+Container의 내부로 들어감.
+
+
+
+
+docker run = docker pull(이미지가 없을 때) + docker create + docker start + docker attach(-i -t 옵션을 사용 했을 때)
+docker create = docker pull(이미지가 없을 때) + docker create
+
+
+
+
+---
+
+
