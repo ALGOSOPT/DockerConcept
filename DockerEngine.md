@@ -136,12 +136,98 @@ Container의 내부로 들어감.
 
 
 
-docker run = docker pull(이미지가 없을 때) + docker create + docker start + docker attach(-i -t 옵션을 사용 했을 때)
-docker create = docker pull(이미지가 없을 때) + docker create
+`docker run = docker pull(이미지가 없을 때) + docker create + docker start + docker attach(-i -t 옵션을 사용 했을 때)`
+`docker create = docker pull(이미지가 없을 때) + docker create`
 
 
 
 
 ---
 
+### 2.2 Container 목록 확인
+
+```
+# docker ps
+```
+ps 명령어는 정지되지 않은 Container만 출력. 
+
+즉, exit를 통해 빠져나온 Container는 정지 상태이기 때문에 Container 목록에 않지만, 
+
+Ctrl + P, Q를 입력해 빠져나온 Container는 실행 중이기 때문에 Container 목록에 출력됨.
+
+
+-a 옵션을 추가하면
+```
+# docker ps -a
+``` 
+정지된 Container를 포함한 모든 Container가 출력됨.
+
+
+
+ * CONTAINER ID : 컨테이너에게 자동으로 할당되는 고유한 ID의 일부분. 모든 ID를 알고 싶으면, # docker inspect 명령어를 사용해 확인하면됨.
+ 
+ * IMAGE : Container를 사용된 image의 이름. 
+ 
+ * COMMAND : Container가 시작될 때 실행될 명령어. 커맨드는 대부분의 image에 미리 내장되어 있기 때문에 별도로 설정할 필요는 없음. 
+ 
+ * CREATED : Container가 생성되고 난 뒤 흐른 시간을 나타냄.
+ 
+ * STATUS : Container의 상태를 나타내며, Container가 실행 중임을 나타내는 'Up', 종료된 상태인 'Exited',일시 중지된 상태인 'Pause'
+ 등이 있음.
+ 
+ * PORTS : Container가 개방한 port와 host에 연결한 post를 나열함. 앞에서 Container를 생성할 때는 외부에 노출하도록 설정하지 않았으므로 PORTS 항목에는 아무것도 출력되지 않았음.
+ 
+ * NAMES : Container의 고유한 이름. Container를 생성할 때 --name 옵션으로 이름을 설정하지 않으면 Docker Engine이 임의의 형용사와 명사를 무작위로 조합해 이름을 설정. Container의 이름은 ID와 마찬가지로 중복될 수는 없음. Docker rename 명령어를 사용하면 Container의 이름을 변경하능
+ 
+---
+
+### 2.3 Container 삭제
+
+더 이상 사용하지 않는 Container를 삭제할 때는 docker rm 명령어를 사용.
+
+한 번 삭제한 Container는 복구할 수 없음.
+
+
+```
+# docker rm 이름
+```
+
+docker ps -a 명령어로 삭제가 되었는지 확인.
+
+
+
+** 실행 중인 ** Container는 삭제 할 수 없음. docker stop 을 먼저 한 후 docker rm으로 삭제.
+
+
+모든 Container를 삭제
+```
+# docker container prune
+```
+
+
+```
+# docker stop $(docker ps -a -q)
+# docker rm $(docker ps -a -q)
+```
+docker ps -a 는 모든, -q는 Container의 ID만 출력하게 하고 이를 변수로 활용해 사용하는 예제.
+
+
+
+
+
+---
+
+### 2.4 Container를 외부에 노출
+
+Container는 가상 머신과 마찬가지로 가상 IP 주소를 할당받음. 
+
+기본적으로 Docker는 Container에 172.17.0.X의 IP를 순차적으로 할당.
+
+```
+# docker run -i -t --name network_test ubuntu:14.04
+/# ifconfig
+```
+docker의 NAT IP인 172.17.0.2를 할당받은 eth0 인터페이스와 local host인 lo interface가 있음.
+
+아무
 
