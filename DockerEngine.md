@@ -4,6 +4,18 @@
 
 - [Docker image와 Container](#1)
   - [Docker image](#1-1)
+  - [Docker Container](#1-2)
+- [Docker Container 다루기](#2)
+  - [Container 생성](#2-1)
+  - [Container 목록 확인](#2-2)
+  - [Container 삭제](#2-3)
+  - [Container를 외부에 노출](#2-4)
+  - [Container Application 구축](#2-5)
+  - [Docker Volume](#2-6)
+      - [Host Volume 공유](#2-6-1)
+      - [Volume Container](#2-6-2)
+      - [Docker Volume](#2-6-3)
+  - [Docker Network](#2-7)
 ---
 ---
 
@@ -41,7 +53,7 @@ ubuntu:latest               -> 이미지 이름 = ubuntu, 이미지 버전 = lat
   를 생략하면 Docker Engine은 image의 tag를 lastest로 인식
   
 ---
-
+<a name="1-2"></a>
 ### 1.2 Docker Container
 
 앞에서 설명한 Docker image는 ubuntu, CentOS 등 기본적인 리눅스 운영체제부터 아파치 웹 서버, MySQL 등의
@@ -62,10 +74,11 @@ Container는 Image를 Read only로 사용하되 Image에서 변경된 사항만 
 
 ---
 ---
-
+<a name="2"></a>
 ## 2 Docker Container 다루기
 
 ---
+<a name="2-1"></a>
 ### 2.1 Container 생성
 
 
@@ -148,7 +161,7 @@ Container의 내부로 들어감.
 
 
 ---
-
+<a name="2-2"></a>
 ### 2.2 Container 목록 확인
 
 ```
@@ -185,7 +198,7 @@ Ctrl + P, Q를 입력해 빠져나온 Container는 실행 중이기 때문에 Co
  * NAMES : Container의 고유한 이름. Container를 생성할 때 --name 옵션으로 이름을 설정하지 않으면 Docker Engine이 임의의 형용사와 명사를 무작위로 조합해 이름을 설정. Container의 이름은 ID와 마찬가지로 중복될 수는 없음. Docker rename 명령어를 사용하면 Container의 이름을 변경하능
  
 ---
-
+<a name="2-3"></a>
 ### 2.3 Container 삭제
 
 더 이상 사용하지 않는 Container를 삭제할 때는 docker rm 명령어를 사용.
@@ -221,7 +234,7 @@ docker ps -a 는 모든, -q는 Container의 ID만 출력하게 하고 이를 변
 
 
 ---
-
+<a name="2-4"></a>
 ### 2.4 Container를 외부에 노출
 
 Container는 가상 머신과 마찬가지로 가상 IP 주소를 할당받음. 
@@ -258,7 +271,7 @@ host의 특정 IP를 사용하려면 `192.168.0.100:7777:80'과 같이 binding�
 ```
 
 ---
-
+<a name="2-5"></a>
 ### 2.5 Container Application 구축
 
 대부분의 서비스는 단일 프로그램으로 동작하지 않음. 여러 agent와 database 등과 연결되어 완전한 서비스로써 
@@ -443,7 +456,7 @@ docker run의 옵션
    
    
 ---
- 
+<a name="2-6"></a>
 ### 2.6 Docker Volume
 
 docker image로 container를 생성하면 image는 읽기 전용이 되며 container의 변경 사항만 별도로 저장해서 각 
@@ -469,7 +482,7 @@ Volume을 활용하는 방법은 여러가지가 있음. host와 volume을 공�
 docker가 관리하는 Volume을 생성할 수도 있음. 첫 번째로 host와 Volume을 공유함으로써 database container를 삭제해도
 data는 삭제되지 않도록 설정해보자.
 
-
+<a name="2-6-1"></a>
 #### 2.6.1 Host Volume 공유
    
    mysql database container와 wordpress web server container를 생성.
@@ -594,7 +607,7 @@ data는 삭제되지 않도록 설정해보자.
   
 
 
-
+<a name="2-6-2"></a>
 #### 2.6.2 Volume Container
 
 볼륨을 사용하는 두 번째 방법은 -v option으로 볼륨을 사용하는 container를 다른 container와 공유하는 것. 
@@ -633,7 +646,7 @@ data를 간접적으로 공유받는 방식.
 
 
 
-
+<a name="2-6-3"></a>
 #### 2.6.3 Docker Volume
 
 Volume을 활용하는 세 번째 방법은 docker volume 명령어를 사용하는 것. 
@@ -793,7 +806,7 @@ stateful 한 container는 container 자체에서 data를 보관하므로 지양�
 
 
 ---
-
+<a name="2-7"></a>
 ### 2.7 Docker Network
 
 
