@@ -300,7 +300,7 @@ docker ps 명령어로 host의 어느 port와 연결됐는지 확인.
 
 80/tcp -> 0.0.0.0:32769
 
-** 0.0.0.0 은 host의 활용 가능한 모든 network interface에 binding 함을 뜻함 **
+-_0.0.0.0 은 host의 활용 가능한 모든 network interface에 binding 함을 뜻함__
 
 
 각자에 docker port 명령에서 나온 port와 각 host의 ip로 wordpress web server에 접근이 가능함.
@@ -323,7 +323,7 @@ docker run의 옵션
        docker ps 명령어로 container 목록을 확인할 때 COMMAND에 표시되는 /bin/bash가 바로 여기에 해당함.
 
        그러나 -d 옵션으로 run을 실행하면 입출력이 없는 상태로 container를 실행함. container 내부에서 
-       program이 terminal을 차지하는 __ foreground __ 로 실행돼 사용자의 입력을 받지 않음.  
+       program이 terminal을 차지하는 __foreground__ 로 실행돼 사용자의 입력을 받지 않음.  
        Detached mode인 Container는 반드시 container내에서 program이 실행돼야 하며, foreground
        program이 실행되지 않으면 container는 종료함.
 
@@ -713,6 +713,85 @@ docker inspect 명렁어는 container, image, volume 등 docker의 모든 구정
 제어하는 명령어를 사용할 수 있음. 예를 들어 docker container inspect는 container의 정보를, 
 docker volume inpect는 volume의 정보를 출력함.
 ```
+
+
+Driver는 Volume이 쓰는 드라이버를, Label은 Volume을 구분하는 label을 나타내며, Mountpoint는 해당 volume이 실제로
+host의 어디에 저장됐는지를 의미함.
+
+그러나 volume을 쓰는 사용자 입장에서 Mountpoint를 알 필요는 없음.
+
+해당 directory file을 살펴보면 container에서 사용했던 파일이 남아 있음을 알 수 있음.
+
+```
+# ls /var/lib/docker/volumes/myvolume/_data
+
+# cat /var/lib/docker/volumes/myvolume/_data/volume
+```
+
+
+docker volume create 명령을 별도로 입력하지 않아도 -v option을 입력할 때 이를 수행하도록 설정 할 수 있음.
+
+다음과 같이 container에서 공유할 directory의 위치를 -v option에 입력하면 해당 directory에 대한 volume을
+자동으로 생성함.
+
+
+```
+# docker run -i -t --name volume_auto -v /root ubuntu:14.04
+```
+
+
+Container를 생성한 뒤 host로 빠져나와 docker volume ls 명령어로 확인하면 이름이 무작위의 16진수 형태인
+Volume이 자동으로 생성된 것을 볼 수 있음.
+
+
+```
+# docker volume ls
+```
+
+생성된 volume_auto container가 위의 dae1b4a ... volume을 사용하는지 확인하는 다른 방법은 do
+docker container inspect 명령어를 이용하는 것.
+docker container inspect 명령어는 container의 상세한 정보를 출력하는데, 
+
+그중 volume mount에 대한 정보도 포함돼 있기 때문.
+
+```
+# docker container inspect volume_auto
+```
+
+
+inspect 명령어는 많은 정보를 출력하믈 대부분의 출력 결과를 생략함.
+여기서 주목할 정보는 "Source" 항목에 정의된 directory인 /var/lib/... 이 volume_auto
+container에 mount되어 Volume으로 쓰고 있다는 것.
+
+이렇게 Docker Volume을 생성하고 삭제하다 보면 불필요한 Volume들이 남아 있을 때가 있음.
+docker volume을 사용하고 있는 container를 삭제해도 
+Volume이 자동으로 삭제되지는 않기 때문.
+
+사용되지 않는 Volume을 한꺼번에 삭제하려면 docker volume prune 명령어를 사용.
+
+```
+# docker volume prune
+```
+
+지금까지 Volume 공유를 통한 data 저장에 대해 알아보았음.
+
+이처럼 Container가 아닌 외부에 data를 저장하고 Container는 그 data로 동작하도록 설계하는 것을
+__stateless__ 하다고 말함.
+
+Container 자체는 상태가 없고 상태를 결정하는 data는 외부에서 제공받음.
+Container가 삭제 되도 data는 보존되므로 stateless한 container 설계는 docker 를 사용할 때
+매우 바람직한 설계
+
+이와 반대로 container가 data를 저장하고 있어 상태가 있는 경우 __stateful__ 하다고 말함. 
+stateful 한 container는 container 자체에서 data를 보관하므로 지양하는 것이 좋음.
+
+
+
+---
+
+### 2.7 Docker Network
+
+
 
 
 
