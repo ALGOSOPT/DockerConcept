@@ -294,3 +294,67 @@ host의 port 중 하나와 container의 80번 port가 연결됨.
 docker ps 명령어로 host의 어느 port와 연결됐는지 확인.
 
 
+`host와 binding된 port만을 확인하려면 docker port 명령을 사용. `
+
+`# docker port wordpress`
+
+80/tcp -> 0.0.0.0:32769
+
+** 0.0.0.0 은 host의 활용 가능한 모든 network interface에 binding 함을 뜻함 **
+
+
+각자에 docker port 명령에서 나온 port와 각 host의 ip로 wordpress web server에 접근이 가능함.
+
+
+
+docker run의 옵션
+* d
+   ```
+   -d : -i -t 가 container 내부로 진입하도록 attach 가능한 상태로 설정한다면 -d는 Detached 모드로 container를 실행함.
+        Detached 모드는 container를 back ground에서 동작하는 application으로써 실행하도록 함.
+   ```
+
+       그림2.9
+
+       앞에서 우분투, CentOS container를 생성한 것처럼 -i, -t option으로 run을 실행하면 표준 입출력이 활성화된, 상호작용이
+       가능한 shell 환경을 사용할 수 있음.  ubuntu:14.04, centos:7과 같은 대부분의 기본 이미지들은 container를 시작할 때
+       /bin/bash를 command로 설정해 실행함으로써 bash shell을 쓸 수 있게 설정. docker ps 명령어로 container 목록을 확인
+       할 때 COMMAND에 표시되는 /bin/bash가 바로 여기에 해당함.
+
+       그러나 -d 옵션으로 run을 실행하면 입출력이 없는 상태로 container를 실행함. container 내붸서 program이 terminal을 
+       차지하는 __ foreground __ 로 실행돼 사용자의 입력을 받지 않음.  Detached mode인 Container는 반드시 container내
+       에서 program이 실행돼야 하며, foreground program이 실행되지 않으면 container는 종료함.
+
+       mysql은 하나의 terminal을 차지하는 mysqld를, word press는 하나의 terminal을 차지하는 apache2-foreground를 실행
+       하므로 -d option을 지정해 background로 설정한 것.
+
+
+
+   ```
+   # docker run -d --name detach_test ubuntu:14.04
+   ```
+
+   container가 생성됐더라도 바로 종료되므로 docker ps 명령어로 확인할 수 없음. 
+
+   docker ps -a 명령어로 상태를 확인
+
+
+   docker start 로 container를 시작해도 container 내부에  terminal을 차지하는 foreground로써 동작하는 프로그램이 없으므로
+   container는 시작되지 않음. 그렇다면 반대로 mysql container를 -i -t option으로 생성하면,
+
+   ```
+   # docker run -i -t --name mysql_attach_test -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=wordpress \
+     mysql:5.7
+   ```
+
+   하나의 terminal을 차지하는 mysqld 프로그램이 foreground로 실행된 log를 볼 수 있음. MYSQL image가 container에서 시작될 때
+   mysqld가 동작하도록 설정돼 있기 때문입니다. 이 상태에서는 상호 입출력이 불가능하고 단순히 프로그램이 foreground mode로 동작하는 것
+   만 지켜볼 수 있음. 이 같은 이유로 -d 옵션을 설정해 container가 background에서 동작하게 하는 것.
+
+
+
+
+* e
+
+
+
