@@ -1,0 +1,3 @@
+[submodule "golang/effective-go"]
+	path = golang/effective-go
+	url = https://github.com/golangkorea/effective-go.git
