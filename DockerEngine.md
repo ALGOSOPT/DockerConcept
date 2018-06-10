@@ -333,7 +333,7 @@ docker run의 옵션
         Detached 모드는 container를 back ground에서 동작하는 application으로써 실행하도록 함.
    ```
 
-       그림2.9
+       ![ScreenShot](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.9.jpg)
 
        앞에서 우분투, CentOS container를 생성한 것처럼 -i, -t option으로 run을 실행하면 표준 입출력이 활성화된, 
        상호작용이 가능한 shell 환경을 사용할 수 있음.  ubuntu:14.04, centos:7과 같은 대부분의 기본 이미지들은 
