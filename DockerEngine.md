@@ -333,7 +333,7 @@ docker run의 옵션
         Detached 모드는 container를 back ground에서 동작하는 application으로써 실행하도록 함.
    ```
 
-       ![ScreenShot](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.9.jpg)
+       ![그림2.9](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.9.jpg)
 
        앞에서 우분투, CentOS container를 생성한 것처럼 -i, -t option으로 run을 실행하면 표준 입출력이 활성화된, 
        상호작용이 가능한 shell 환경을 사용할 수 있음.  ubuntu:14.04, centos:7과 같은 대부분의 기본 이미지들은 
@@ -463,7 +463,7 @@ docker image로 container를 생성하면 image는 읽기 전용이 되며 conta
 container의 정보를 보존함. 예를 들어, 위에서 생성했던 mysql container는 mysql:5.7이라는 image로 생성됐
 지만 wordpress blog를 위한 database 등의 정보는 container가 갖고 있음.
 
-그림 2.10
+![그림2.10](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.10.jpg)
 
 
 이미 생성된 image는 어떠한 경우로도 변경되지 않으며, container 계층에 원래 image에서 변경된 file system 등을
@@ -545,7 +545,7 @@ data는 삭제되지 않도록 설정해보자.
    완전히 같은 directory.
    
    
-   그림 2.11
+   ![그림2.11](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.11.jpg)
    
   ```
   (참고)
@@ -566,7 +566,7 @@ data는 삭제되지 않도록 설정해보자.
   복사 된 것. 
   
   
-  그림 2.12
+  ![그림2.11](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.11.jpg)
   
   그렇다면 host에 이미 디렉터리와 file이 존재하고 container도 존재 할 때 두 directory를 공유하면 어떻게 될까?
   
@@ -634,7 +634,7 @@ root@:/# ls /home/testdir_2/
 
 --volumes-from 옵션을 적용한 container와 volume container 사이의 관계를 나타내면 다음 그림과 같다.
 
-그림 2.13
+![그림2.13](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.13.jpg)
 
 
 여러개의 container가 동일한 container에 --volumes-from 옵션을 사용함으로써 볼륨을 공유해 사용할 수도 있음.
@@ -710,7 +710,7 @@ container를 생성해 확인해보자
 docker volume 명령어로 생성한 volume은 아래 그림과 같은 구조로 활용됨.
 docker volume도 여러 개의 container에 공유되어 활용될 수 있음.
 
-그림 2.14
+![그림2.14](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/그림2.14.jpg)
 
 
 Volume은 directory 하나에 상응하는 docker engine에서 관리함. docker volume도 host volume 공유와
