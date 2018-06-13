@@ -810,7 +810,576 @@ stateful 한 container는 container 자체에서 data를 보관하므로 지양�
 <a name="2-7"></a>
 ### 2.7 Docker Network
 
+##### 2.7.1 Docker Network 구조
+
+이 전에 Container 내부에서 ifconfig 를 입력해 Container의 network interface에 eth0과 lo 네트워크 인터페이스가 있는 것을 확인했음.
+
+```
+# root@ /# ifconfig
+
+```
+
+이전에 언급한 바와 같이 Docker는 Container에 내부 IP를 순차적으로 할당하며, 이 IP는 Container를 재시작할 때 마다
+변경될 수 있음. 이 내부 IP는 Docker가 설치된 host, 즉 내부 망에서만 쓸 수 있는 IP이므로 외부와 연결될 필요가 있음.
+
+이 과정은 Container를 시작할 때마다 Host에  Veth... 라는 Network Interface를 생성함으로써 이루어짐.
+
+Docker는 각 Container에 외부와의 Network를 제공하기 위해 Container 마다 가상 network interface를 host에 생성하며
+
+이 interface의 이름은 veth로 시작함.
+
+veth interface는 사용자가 직접 생성할 필요는 없으며 Container가 생성될 때 Docker Engine이 자동으로 생성.
+
+```
+(참고) veth에서 v는 virtual을 뜻함. 즉 virtual eth라는 의미
+```
+
+
+Docker가 설치된 host에서 ifconfig나 ip addr과 같은 명령어오 network interface를 확인하면 실행 중인 Container 수 만큼
+veth로 시작하는 interface가 생성된 것을 확인할 수 있음.
 
 
 
+```
+# ifconfig
 
+veth 확인
+
+```
+
+출력 결과에서 eth0은 공인 IP 또는 내부 IP가 할당되어 실제로 외부와 통신할 수 있는 host의 network interface.
+
+veth로 시작하는 interface는 container를 시작할 때 생성됐으며, 각 container의 eth0과 연결함.
+
+
+veth interface뿐 아니라 docker0 이라는 bridge도 존재하는데, docker0 bridge는 각 veth interface와 binding돼
+host의 eth0 interface와 이어주는 역할을 함. 즉 container와 host의 network는 아래 그림과 같은 구성
+
+[그림 2.15]
+
+
+정리하면 container의 eth0 interface는 host의 veth...라는 interface와 연결됐으며 veth interface는 docker0 bridge와
+binding돼 외부와 통신할 수 있음.
+
+
+```
+(참고) brctl 명령어를 이용해 docker0 bridge에 veth이 실제로 binding되어있는지 
+알 수 있음.
+
+# brtcl show docker0
+
+```
+
+#### 2.7.2 Docker Network 기능
+
+Container를 생성하면 기본적으로 docker0 bridge를 통해 외부와 통신할 수 있는 환경을 사용할 수 있지만, 
+
+사용자의 선책에 따라 여러 네트워크 드라이버를 쓸 수 도 있음.
+
+docker가 자체적으로 제공하는 대표적인 network driver는 bridge, host, non, container, overlay가 있음.
+
+third party plugin solution으로는 weave, flannel, openswitch 등이 있으며, 더 확장된 network 구성을 위해 활용됨.
+
+이번 장에서 bridge, non, host, container에 대한 설명을 할 예쩡
+
+
+
+먼저 Docker에서 기본적으로 쓸 수 있는 network는 무엇이 있는지 확인해보자.
+Docker network ls 명령어오 network 목록을 확인.
+
+Docker의 network를 다루는 명령어는 docker network로 시작
+
+```
+# docker network ls
+```
+
+
+이미 bridge, host, none   network가 있는 것을 알 수 있다. bridge network는 container를 생성할 때 자동으로
+연결되는 docker0 bridge를 활용하도록 설정돼어 있음.
+
+이 network는 172.17.0.x IP 대역을 container에 순차적으로 할당. docker network inspect 명령어를 이용하면 
+network의 자세한 정보를 살펴볼 수 있음.
+
+docker inspect --type network를 사용해도 동일한 출력 결과를 볼 수 있음.
+
+
+```
+# docker network inspect bridge
+```
+Config 항목의 subnet과 gateway가 172.17.0.0/16과 172.17.0.1로 설정되어 있음.
+또한 bridge network를 사용 중인 container의 목록을 Containers 항목에서 확인할 수 있음.
+아무런 설정을 하지 않고 Container를 생성하면 Container는 자동으로 docker0 bridge를 사용.
+
+
+__Bridge Network__
+
+Bridge Network는 docker0이 아닌 사용자 정의 bridge를 생성해 각 container에 연결하는 network 구조.
+Container는 연결된 Bridge를 통해 외부와 통신할 수 있음.
+
+
+기본적으로 존재하는 docker0을 사용하는 bridge network가 아닌 새로운 bridge type의 network를 생성할 수 있음.
+
+다음 명령어를 입력해 새로운 bridge network를 생성.
+
+```
+# docker network create --driver bridge mybridge
+```
+bridge type의 mybridge라는 network가 생성됨.
+
+docker run 또는 create 명령어에 --net 옵션의 값을 설정하면 container가 이 network를 사용하도록 설정할 수 있음.
+
+다음 명령어를 입력해 mybridge network를 사용하는 container를 생성
+
+```
+# docker run -i -t --name mynetwork_container \
+  --net mybridge0 \
+  ubuntu:14.04
+```
+
+container 내부에서 ifconfig를 입력하면 새로운 IP 대역이 할당된 것을 알 수 있음.
+
+Bridge type의 network를 생성하면 Docker는 IP대역을 차례대로 할당함.
+
+다음 예시에서는 172.18 대역의 내부 IP가 할당됨.
+
+```
+root@/# ifconfig
+
+```
+
+network의 subnet, gateway, IP 할당 범위 등을 임의로 설정하려면 network를 생성할 때 아래와 같이
+
+--subnet, --ip-range, --gateway 옵션을 추가함.
+
+단, --subnet과 --ip-range는 같은 대역이여야 함.
+
+```
+# docker network create --driver=bridge \
+  --subnet=172.72.0.0/16 \
+  --ip-range=172.82.0.0/24 \
+  --gateway=172.72.0.1 \
+  my_custom_network
+```
+
+
+__host nerwork__
+
+network를 host로 설정하면 host의 network 환경을 그대로 쓸 수 있음.
+위의 bridge driver network와는 달리 host driver의 network는 별도로 생성할 필요 없이
+기존의 host라는 이름의 network를 사용함
+
+```
+root@/# docker run -i -t --name network_host \
+        --net host \
+        ubuntu:14.04 
+
+
+     # echo "컨테이너 입니다"
+```
+
+--net 옵션을 입력해 host를 설정한 container의 내부에서 network환경을 확인하면 host와 같은 것을 알 수 있음.
+host machine에서 설정한 host이름도 container가 물려받기 때문에 container의 host이름도 무작위
+16진수가 아닌 docker engine이 설치된 host machine의 host이름으로 설정됨.
+
+```
+root@docker-host:/# echo "컨테이너 내부입니다."
+root@docker-host:/# ifconfig
+```
+
+Container의 network host mode로 설정하면 container 내부의 application을 별도의 port forwarding 없이 
+바로 서비스할 수 있음. 이는 마치 실제 host에서 application을 외부에 노출하는 것과 같음.
+
+예를 들어, host mode를 쓰는 Container에서 아파치 웹 서버를 구동한다면 host의 IP와 Container의 아파치
+웹서버 포트인 80으로 바로 접근가능
+
+
+__None network__
+
+none은 말 그대로 아무런 nerwork를 쓰지 않는 것을 뜻함.
+다음과 같이 Container를 생성하면 외부와 연결이 단절됨.
+
+```
+# docker run -i -t --name network_none \
+  --net none \
+  ubuntu:14.04
+```
+
+--net 옵션으로 none을 설정한 container 내부에서 network interface를 확인하면 local host를 
+나타내는 lo 외에는 존재하지 않는 다는 것을 알 수 있음.
+
+```
+# ifconfig
+```
+
+
+__Container Network__
+
+--net option으로 container를 입력하면 다른 Container의 network환경을 공유할 수 있음.
+공유되는 속성은 내부 IP, network interface의  MAC address 등. --net 옵션의 값으로
+container:[다른 Container의 ID]와 같이 입력
+
+```
+# docker run -i -t --name network_container_1 ubuntu:14.04
+
+# docker run -i -t -d --name network_container_2 \
+  --net container:network_container_1 \
+  ubuntu:14.04
+```
+
+
+```
+(참고) -i, -t, -d 옵션을 함께 사용하면 Container 내부에서 Shell을 실행하지만 내부로 들어가지 않으며  
+Container도 종료되지 않음. 위와 같이 test용으로 Container를 생성할 때 유용하게 쓸 수 있음.
+
+```
+
+위와 같이 다른 Container의 network 환경을 공유하면 내부 IP를 새로 할당받지 않으며 host에 veth로 시작하는
+가상 network interface도 생성되지 않음. network_contianer_2 container의 network와 관련된 사항은 전부
+network_container_1과 같게 설정됨.
+
+다음 명령어를 입력해 이를 확인할 수 있음.
+
+```
+# docker exec network_container_1 ifconfig
+
+# docker exec network_container_2 ifconfig
+
+```
+
+두 container의 eth0에 대한 정보가 완전히 같은 것을 알 수 있음.
+
+이를 그림으로 나타내면 아래와 같음.
+
+[그림2.16]
+
+
+
+__Bridge network와 --net-alias
+
+bridge type의 network와 run 명령어의 --net-alias 옵션을 함께 쓰면 특정 host 이름으로 container 여러 개에 접근할 수 있음.
+위에서 생성한 mybridge network를 이용해 container를 3개 생성해보자. --net-alias 옵션의 값은 alicek106으로 설정했으며,
+다른 Container에서 alicek10g6이라는 host 이름으로 아래 3개의 container에 접근할 수 있음.
+
+```
+# docker run -i -t -d --name network-alias_container1 \
+  --net mybridge \
+  --net-alias alicek106 ubuntu:14.04
+  
+  
+# docker run -i -t -d --name network_alias_container2 \
+  --net mybridge \
+  --net-alias alicek106 \
+  ubuntu:14.04
+  
+# docker run -i -t -d --name network_alias_container3 \
+  --net mybridge \
+  --net-alias alicek106 \
+  ubuntu:14.04
+  
+```
+
+inspect 명령어오 각 container의 IP를 확인해보자
+```
+# docker inspect network_alias_container1 | grep IPAddress
+```
+
+첫 번째 Container의 IP 주소가 172.18.0.3 이므로 두, 세 번째 container는 각각 172.18.0.4, 5일 것임.
+
+세 개의 Container에 접근할 Container를 생성한 뒤 alicek106이라는 host이름으로 ping 요청을 전송해봄.
+
+```
+# docker run -i -t --name network_alias_ping \
+  --net mybridge \
+  ubuntu:14.04
+  
+root@:/# ping -c 1 alicek106
+
+root@:/# ping -c 1 alicek106
+
+root@:/# ping -c 1 alicek106
+```
+
+Container 3개의 IP로 각각 Ping이 전송된 것을 확인할 수 있음.
+
+매번 달라지는 IP를 결정하는 것은 별도의 알고리즘이 아닌 round robin방식.
+
+이 것이 가능한 이유는 Docker Engine에 내장된 DNS가 alicek106 이라는 host 이름을
+--net-alias 옵션으로  alicek106을 설정한 container로 변환(resolve)하기 때문.
+
+다음 그림은 docker network 에서 사용하는 내장 DNS와 --net-alias의 관계를 보여줌
+
+[그림2.17]
+
+
+Docker의 DNS는 host 이름으로 유동적인 Container를 찾을 때 주로 사용됨.
+
+가장 대표적인 예가 --link 옵션인데, 이는 Container의 IP가 변경돼도 별명으로 Container를 찾을 수 있게 DNS에 
+의해 자동으로 관리됨.
+
+단, 이 경우는 Default bridge network의 container DNS라는 점이 다름.
+
+--net-alias option 또한 --link option과 비슷한 원리도 작동함.
+
+Docker는 기본 Bridge network 사용자가 정의한 bridge network에 사용되는 내장 DNS 서버를 가지며, DNS의 IP는
+
+127.0.0.11 임. mybridge라는 이름의 network에 속한 3개의 container는 run으로 생성할 때 --net-alias 옵션에
+
+alicek106이라는 hsot 이름으로 등록됨.
+
+mybridge network에 속한 container에서 alicek106이라는 host 이름으로 접근하면 DNS 서버는 round-robin 방식을 
+이용해 Container의 IP list를 반환함. 
+
+ping 명령어는 이 IP list에서 첫 번째 IP를 사용하므로 매번 다른 IP로 ping을 전송함.
+
+이를 확인하기 위해 dig라는 도구를 사용해보자
+dig는 DNS로 domain 이름에 대응하는 IP를 조회할 때 쓰는 도구.
+
+dig는 ubuntu:14.04 image에 설치돼 있지 않으므로 방금 생성한 network_alias_ping container 내부에서 다음
+명령어를 입력해 설치람
+
+```
+root@ :/# apt-get update
+root@ :/# apt-get install dnsutils
+```
+
+dig 명령어로 alicek106 host 이름이 반환되는 IP를 확인함. 
+
+```
+root@:/# dig alicek106
+```
+위 명령어를 반복해서 입력해보면 반환되는 IP의 list 순서가 모두 다른 것을 알 수 있음.
+
+
+
+---
+### 2.8 Container Logging
+
+#### 2.8.1 json-file 로그 사용하기
+
+Container 내부에서 어떤 일이 일어나는지 아는 것은 debugging 뿐만 아니라 운영측면에서도 중요함.
+
+application level에서 log가 기록되도록 개발해 별도의 logging service를 쓸 수도 있지만 Docker는 container의 표준 출력(Stdout)
+과 에러(StdErr) log를 별도의 metadata file로 저장하며 이를 확인하는 명령어를 제공함.
+
+먼저 container를 생성해 간단한 log를 남겨보다. 
+
+다음 명령은 mysql5.7 버전의 container를 생성함.
+
+```
+# docker run -d --name mysql \
+  -e MYSQL_ROOT_PASSWORD=1234 \
+  mysql:5.7
+```
+mysql과 같은 application을 구동하는 container는 foreground mode로 실행되므로 -d 옵션을 써서 background mode로
+container를 생성하는 경우가 많음. 따라서 application이 잘 구동되는지 여부를 알 수 없지만 docker logs 명령어를 써서
+Container의 상태를 알 수 있음. 
+
+docker logs 명령어는 container 내부에서 출력을 보여주는 명령어임.
+
+```
+# docker log mysql
+
+```
+
+이번에는 다른 방법으로 container를 생성해보자. 동일한 mysql container를 생성하되,
+-e 옵션을 제외해야함.
+
+```
+# docker run -d --name no_passwd_mysql \
+  mysql:5.7
+```
+
+위 명령어를 실행한 뒤 docker ps 명령어로 container의 목록을 확인하면 mysql2 container는 
+생성 되었으나 실행되지 않음.
+
+docker start 명령어로 다시 시작해도 container는 시작되지 않음.
+
+```
+# docker ps --format "table {{.ID}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}"
+
+# docker start no_passwd_mysql
+
+# docker ps --format "table {{.ID}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}"
+
+```
+
+이럴 때 docker logs 명령어를 사용하면 application에 무슨 문제가 있는지 확인할 수 있음.
+위의 경우에는 mysql 실행에 필요한 환경변수를 지정하지 않아 Container가 시작되지 않은 것.
+
+이처럼 Container가 정상적으로 실행 및 동작하지 않고 docker attach 명령어도 사용하지 
+못하는 개발환경에서 docker logs 명령어를 쓰면 간단하고 빠르게 에러를 확인할 수 있음.
+
+
+```
+# docker logs no_passwd_mysql
+
+```
+
+container의 log가 너무 많아 읽기 힘들다면 --tail 옵션을 써서 마지막 log 줄부터 출력할 줄의 수를
+설정할 수 있음. 다음 예시에서는 container의 log 중 마지막 2줄만 출력함.
+
+```
+# docker logs --tail mysql
+```
+
+--since 옵션에서 유닉스 시간을 입력해 특정 시간 이후의 log를 확인할 수 있으며 -t 옵션으로 timestamp
+를 표시할 수도 있음. Container에서 실시간으로 출력되는 내용을 확인하려면 -f 옵션을 써서 log를
+stream으로 확인할 수 있음. 특히 -f 옵셔은 application을 개발할 때 유용함.
+
+```
+# docker logs --since 1474765979 mysql
+```
+
+```
+# docker logs -f -t mysql
+```
+
+docker logs 명령어는 run 명령어에서 -i -t 옵션을 설정해  docker attach 명령어를 사용할 수 있는 Container에도
+쓸 수 있으며, Container 내부에서 bash shell 등을 입출력한 내용을 확인할 수 있음.
+
+```
+# docker run -i -t --name logstest ubuntu:14.04
+
+# docker logs logstest
+```
+
+기본적으로 위와 같은 container log는 JSON 형태로 docker 내부에 저장됨.
+이 파일은 다음경로에 container의 ID로 시작하는 file명으로 저장됨. 
+
+아래의 log file의 내용을 cat, vi 편집기 등으로 확인하면
+
+logs 명령으로 정제되지 않은 JSON data를 볼 수 있으.ㅁ
+
+
+```
+# cat /var/lib/docker/container/${CONTAINER_ID}/${CONTAINER_ID}-json.log
+```
+
+
+어떠한 설정도 하지 않았따면 docker는 위와 같이 container log를 JSON file로 저장하지만
+
+그 밖에도 각종 logging driver를 사용하게 설정해 container log를 수집할 수 있음.
+
+사용가능한 driver의 대표적인 예로  syslog, journalId, fluentd, awslogs 등이 있으며 application의 특징에 
+적합한 logging driver를 선택함
+
+```
+(참고) logging driver는 기본적으로 json-file로 설정되어 있지만 docker daemon 시작 옵셔에서 --log-driver option을 써서
+기본적으로 사용할 logging driver를 변경할 수 있음. 
+
+DOCKER_OPTS="--log-driver=syslog"
+```
+
+#### 2.8.1 syslog 로그
+
+Container의 Log는 JSON 뿐 아니라 syslog로 보내 저장하도록 설정할 수 있음. syslog는 유닉스 계열 운영체제에서 log를 
+수집하는 오래된 표준 중 하나로서, kernel, security 등 system과 관련된 log, application log 등 다양한 종류의
+log를 수집해 저장함. 대부분의 unix 계열 운영체제에서는 syslog를 사용하는 interface가 동일하기 때문에 체계적으로
+log를 수집하고 분석할 수 있다는 장점이 있음.
+
+다음 명령어를 입력해 syslog에 log를 저장하는 container를 생성함. 
+
+container의 cmd가 echo syslogtest로 설정되기 때문에 syslogtest라는 문구를 출력하고 container는 종료될 것.
+
+```
+# docker run -d --name syslog_container \
+  --log-driver=syslog \
+  ubuntu:14.04 \
+  echo syslogtest
+```
+
+syslog 로깅 driver는 기본적으로 local host의 syslog에 저장하므로 운영체제 및 배포판에 따라 syslog file의 위치를 알아야
+이를 확인할 수 있음.
+
+ubuntu 14.04는 /var/log/syslog, CentOS와 RHEL은 /var/log/messages file에서 ubuntu 16.04와 CoreOS는 journalctl -u
+docker.service 명령어로 확인할 수 있음.
+
+다음은 ubuntu에서 syslog가 기록된 예시
+
+```
+# tail /var/log/syslog
+```
+
+
+syslog를 원격 서버로 설치하면 log option을 추가해 log 정보를 원격 서버로 보낼 수 있음. 이번에는 syslog를 원격에 저장하는 방법의
+하나인 rsyslog를 써서 중앙 container로 log를 저장해보자. 아래의 IP는 이번 예시에서 사용된 server의 IP이며, syslog를 사용할 서버와
+client 2개의 machine을 따로 설정함.
+
+
+```
+server host : 192.168.0.100
+client host : 192.168.0.101
+```
+
+server host에 rsyslog 서비스가 시작하도록 container를 구동하고, client host에서 container 생성해 server의 rsyslog를 저장.
+server host에서 다음 명령어를 입력해 rsyslog container를 생성함.
+
+
+```
+server@192.168.0.100# docker run -i -t \
+                      -h rsyslog \
+                      --name rsyslog_server \
+                      -p 514:514 -p 514:514/udp \
+                      ubuntu:14.04
+```
+
+container 내부의 rsyslog.conf file을 열어 syslog server를 구동시키는 항목의 주석을 해제한 후 변경사항을 저장함.
+
+```
+root@:/# vi /etc/rsyslog.conf
+
+...
+
+#provides UDP syslog reception
+$ModLoad imudp
+$UDPServerRun 514
+
+
+
+#provides TCP syslog reception
+$ModLoad imtcp
+$InputTCPServer 514
+....
+```
+
+다음 명령어를 입력해 rsyslog 서비스를 재시작함.
+```
+root@:/# service rsyslog restart
+```
+
+```
+(참고) rsyslog Container가 아닌 ubuntu, CentOS 등의 host에서도 쓸 수 있으며,
+위 방법은 ubuntu를 기준으로 함. 그러나 Container를 쓰면 host가 어떤 운영체제이든
+상관없이 rsyslog를 사용할 수 있음.
+이 처럼 application을 container로 구현하면 docker engine이 설치 될 수 있는 운영
+체제라면 어떤 환경이라도 간단히 배포할 수 있음.
+```
+
+
+Container를 빠져나온 뒤 Client host에서 아래의 명령어를 입력해 Container를 생성함. 
+Container log를 기록하기 위해 간단한 echo 명령어를 실행.
+
+
+
+```
+client@192.168.0.101# docker run -i -t \
+                      --log-driver=syslog \
+                      --log-opt syslog-address=tcp://192.168.0.100:514 \
+                      --log-opt tag="mylog" \
+                      ubuntu:14.04
+            
+root@:/# echo test
+```
+
+
+--log-opt는 logging driver에 추가할 옵션을 뜻하며 syslog-address에 rsyslog container에 접근할 수 있는
+주소를 입력함.
+tag는 log data가 기록될 때 함께 저장될 tag이며 log를 분류하기 위해 사용됨.
+
+다시 server의 rsyslog container로 되돌아와 container 내부의 syslog file을 확인하면 log가 전송된 것을
+알 수 있음. 또한 각기 log앞에 mytag라는 명칭이 추가됨.
+
+
+```
+root@rsyslog:/# tail /var/log/syslog
+```
