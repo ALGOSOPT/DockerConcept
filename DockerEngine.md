@@ -1383,3 +1383,287 @@ tag는 log data가 기록될 때 함께 저장될 tag이며 log를 분류하기 
 ```
 root@rsyslog:/# tail /var/log/syslog
 ```
+
+
+```
+(참고) rsyslog의 설정 file을 변경할 때 tcp와 udp의 두 방법 
+모두 활성화 했으므로 syslog흫 쓸 때 tcp 뿐만 아니라 udp로 쓸 수도 있다.
+
+# docker run -i -t \
+  --log-driver=syslog \
+  --log-opt syslog-address=udp://192.168.0.100:514 \
+  --log-opt tag="mylog" \
+  ubuntu:14.04
+```
+
+
+--opt-log 옵션으로 syslog-facility를 쓰면 log가 저장될 파일을 바꿀 수 있음.  facility는 log흫 생성하는 주체에 따라 log를 다르게 저장하는 것으로, 여러 application에서 수집되는 log를 분류하는 방법. 기본적으로 daemon으로 설정돼 있지만 kern, user, mail 등 다른 facility를 사용할 수 있음.
+
+```
+# docker run -i -t \
+  --log-driver syslog \
+  --log-opt syslog-address=tcp://192.168.0.100:514 \
+  --log-opt tag="maillog" \
+  --log-opt syslog-facility="mail" \
+  ubuntu:14.04
+```
+
+facility 옵션을 쓰면 rsyslog 서버 container에 해당 facility에 해당하는 새로운 log file이 생성됨.
+
+```
+root@rsyslog:/var/log# ls /var/log/
+```
+
+
+rsyslog는 ubuntu에서 쓸 수 있는 기본적인 log 방법이므로 별도의 UI를 제공하지 않지만 logentries, LogAnalyzer 등과 같은 log 분석기와
+연동하면 web interface를 활용해 편리하게 log를 확인할 수 있음.
+
+---
+### 2.9 Container 자원 할당 제한
+
+container를 생성하는 run, create 명렁어에서 container의 자원 할당량을 조정하도록 option을 입력할 수 있음.
+아무런 option을 입력하지 않으면 container는 host의 자원을 제한 없이 쓸 수 있게 설정되므로 제품 단계의 container를 고려한다면 container의 자원할당을 제한해 host와 다른 container의 동작을 방해하지 않게 설정하는 것이 좋음.
+
+container의 자원할당 option을 설정하지 않으면, host의 자원을 전부 점유해 다른 container들 뿐 아니라 host 자체의 동작이 멈출 수도 있음.
+
+현재의 container에 설정된 자원 제한을 확인하는 가장 쉬운 방법은 docker inspect 명령어를 입력하는 것.
+
+
+자원 할당을 제한하기 위해 container에 적용할 수 있는 option은 많지만, 여기서는 대표적인 몇가지만 설명.
+
+#### 2.9.1 Container memory 제한
+docker run 명령어에 --memory를 지정해 container의 memory를 제한 할 수 있음. 입력할 수 있는 단위는 m, g.
+
+제한할 수 있는 최소한의 memory는 4MB. 다음 명령어는 container의 memory사용량을 1GB로 제한함.
+
+```
+# docker run -d \
+  --memory="1g" \
+  --name memory_1g \
+  nginx
+```
+
+위 명령어로 container를 생성한 뒤 inspect 명령어로 memory의 값을 확인하면 1GB에 해당하는 바이트 값이 설정됐음을
+확인할 수 있음.
+
+```
+# docker inspect memory_1g | grep \"Memory\"
+```
+
+container 내에서 동작하는 process가 container에 할당된 메모리를 초과하면 container는 자동으로 종료되므로 application에 따라
+메모리를 적절하게 할당하는 것이 좋음. 다음 명령어는 memory를 매우 적게 할당하는 경우로서 4MB의 메모리로 mysql container를 실행하면
+memory가 부족해 container가 실행되지 않음.
+
+```
+# docker run -d --name memory_4m \
+  --memory="4m" \
+  mysql:5.7
+  
+  
+# docker ps -a --format "table {{.ID}}\t{{.Status}}\t{{.Names}}"
+
+```
+
+기본적으로 container의 Swap memory는 memory의 2배로 설정되지만 별도로 지정할 수 있음.
+다음 명령어는 Swap memory를 500MB로, memory를 200MB로 설정해 container를 생성
+
+```
+# docker run -i -t --name swap_500m \ 
+  --memory=200m \
+  --memory-swap=500m \
+  ubuntu:14.04
+```
+
+
+#### 2.9.2 container CPU 제한
+
+**--cpu-shares**
+가상 머신이 특정 개수의 CPU를 할당받던 것과는 다르게 모든 container의 작업은 CPU scheduling에서 
+같은 비율로 처리됨. 따라서 contaienr 하나에 CPU를 한 개 할당받는 방식이 아닌 CPU scheduling에서
+CPU를 얼마나 마니 차지할 것인가를 설정해야함. 다음 명령어에서 --cpu-shares option은 container가
+CPU를 얼마나 차지할 것인지를 설정함.
+
+```
+# docker run -i -t --name cpu_share \
+  --cpu-shares 2048 \
+  ubuntu:14.04
+```
+
+--cpu-shares option은 상대적인 값을 가짐. 아무런 설정을 하지 않았을 때 container가 가지는 값은 1024로서
+이는 CPU할당에서 1의 비율을 뜻함. 
+
+즉, 위의 예제와 같이 container의 --cpu-shares를 2048로 설정하면 CPU 작업 시 일반 container보다 2배 많은 시간을
+할당 받음.
+
+--cpu-shares 옵션으로 간단한 test를 해봅시다. 다음 명령어를 입력해 2개의 container를 생성.
+cpu_1024 container는 cpu_512 container보다 할당시간이 2배 높음. 여기서 사용한 docker host는 
+1개의 CPU를 가지고 있음. 각 container의 명령어로는 1번째 CPU에 부하를 주는 명령어(stress --cpu 1)로 설정됨.
+
+```
+# docker run -d --name cpu_1024 \
+  --cpu-shares 1024 \
+  alicek106/stress \
+  stress --cpu 1
+```
+
+```
+# docker run -d --name cpu_512 \
+  --cpu-shares 512 \ 
+  alicek106/stress \
+  stress --cpu 1
+```
+
+host에서 아래의 명령어를 입력해 process의 자원 사용량을 확인하면 cpu_512 container는 cpu_1024 container보다
+CPU 할당을 약 절반만큼 받은 것을 알 수 있음.
+
+```
+# ps aux | grep stress
+```
+
+
+```
+(참고) 위에서 사용한 stress라는 명령어는 CPU와 memory에 과부하를 줘서 성능을 test함.
+ubuntu container에서는 다음 명령어로 설치할 수 있음. alicek106/stress docker image는
+미리 준비한 stress가 설치된 ubuntu image임.
+
+# apt-get install stress
+
+위에서 생성한 container는 -d 옵션으로 생성되어 백그라운드에서 계속 cpu에 부하를 주므로 test가 끝나면
+반드시 container를 삭제해야함
+```
+
+**--cpuset-cpu**
+
+host에 CPU가 여러개 있을 때, --cpuset-cpus 옵션을 지정해 container가 특정 cpu만 사용하도록 설정할 수 있음.
+CPU 집중적인 작업이 필요하다면 여러개의 CPU를 사용하도록 설정해 작업을 적절하게 분배하는 것이 좋음
+다음 예시는 container가 3번째 CPU만 사용하도록 설정
+
+```
+# docker run -d --name cpuset_2 \
+  --cpuset-cpus=2 \
+  alicek106/stress \
+  stress --cpu 1
+```
+cpu별 사용량을 확인할 수 있는 대표적인 도구로 htop이 있으며 ubuntu에서는 apt-get install htop, 
+CentOS에서는 yum -y install epel-release && yum -y install htop으로 설치할 수 있음.
+htop 명령어로 CPU 사용량을 확인하면 3번째 CPU만 사용되는 것을 알 수 있음.
+
+
+```
+(참고) --cpuset-cpus="0.3"은 1, 4번째 cpu를, --cpuset-cpus="0-2"는 1,2,3번째 cpu를 사용하도록 설정
+```
+
+**--cpu-period, --cpu-quota**
+container의 CFS(Completely Fair Scheduler) 주기는 기본적으로 100ms로 설정되지만 run 명령어의
+option 중 --cpu-period와 --cpu-quota로 이 주기를 변경할 수 있음.
+
+다음 명령어를 입력해 container를 생성
+
+```
+# docker run -d --name quato_1_4 \
+  --cpu-period=100000 \
+  --cpu-quota=25000 \
+  alicek106/stress \
+  stress --cpu 1
+```
+
+--cpu-period의 값은 기본적으로 100000이며 이는 100ms를 뜻함.
+--cpu-quota는 --cpu-period에 설정된 시간 중 CPU scheduling이 얼마나 할당할 것인지를 설정함.
+위 예시에서 100000(--cpu-priod) 중 25000(--cpu-quota)만큼을 할당해 cpu주기가 1/4로 줄었으므로
+일반적인 container보다 CPU 설능이 1/4 정도로 감소함. 즉, container는 [--cpu-period 값]/[--cpu-quota 값]
+만큼 CPU 시간을 할당받음.
+
+성능 비교를 위해 다음 명령어로  container를 추가로 생성
+
+```
+# docker run -d --name quota_1_1 \
+  --cpu-period=100000 \
+  --cpu-quota=100000 \
+  alicek106/stress \
+  stress --cpu 1
+```
+
+htop 명령어나 ps aux | grep stress 로 cpu를 할당량을 확인하면 첫 번째 container가 1/4만큼 
+cpu를 적게 사용하고 있음을 알 수 있음.
+
+```
+# ps aux | grep stress
+```
+
+
+**--cpus**
+
+--cpus 옵션은 --cpu-period, --cpu-quota와 --cpu-share와 동일한 기능을 하지만 좀 더 직관적으로 CPU의
+개수를 직접 지정한다는 점에서 다름.
+
+예를 들어 --cpus 옵션에 0.5를 설정하면 --cpushare=512 또는 --cpu-period=100000 --cpu-quota=50000과 
+동일하게 container의 CPU를 제한할 수 있음.
+
+```
+# docker run -d --name cpus_container \
+  --cpus=0.5 \
+  alicek106/stress \
+  stress --cpu 1
+```
+
+마찬자기로 container의 사용량을 확인해보면 CPU의 약 50%르 점유하고 있음을 알 수 있음.
+
+```
+# ps aux | grep stress
+```
+
+
+#### 2.9.3 Block I/O 제한
+Container를 생성할 때 아무런 option도 설정하지 않으면 container 내부에서 file을 읽고 쓰는 대역폭에
+제한이 설정되지 않음.
+
+하나의 container가 block 입출력을 과도하게 사용하지 않게 설정하려면 run 명령어에서 --device-write-bps,
+--device-read-bps, --device-write-iops, --device-read-iops 옵션을 지정해 block 입출력을 제한할 수 있음.
+단, Direct I/O의 경우에만 block 입출력이 제한되며, Buffered I/O는 제한되지 않음.
+
+--device-write-bps, --device-read-bps는 각기 쓰고 읽는 작업의 초당 제한을 설정하며, kb, mb, gb 단위로
+제한할 수 있음. 예를 들어, 다음 명령어로 container를 생성하면 초당 쓰기 작업의 최대치가 1MB로 제한 됨.
+
+```
+# docker run -it \
+  --device-write-bps /dev/xvda:1mb \
+  ubuntu:14.04
+```
+
+```
+(참고) 여기서 사용되는 Block I/O를 제한하는 옵션은 [디바이스 이름]:[값] 형태로 설정해야함.
+위 예시는 AWS의 EC2 instance에서 test했기 때문에 /dev/xvda라는 device를 사용하고 있으며
+이 device에서 container의 저장 공간을 할당받고 있어 /dev/xvda:1mb로 설정함.
+단, devicemapper를 storage driver를 사용하는 docker engine에서 loop device를 storage로 사용하고 있다면,
+/dev/loop0:1mb와 같은 형식으로 써야함
+```
+
+위의 명령어로 생성된 container에서 쓰기 작업을 test해보면 속도가 초당 1MB로 제한되는 것을 확인할 수 있음.
+다음 명령어는 10MB의 file을 Direct I/O를 통해 쓰기 작업을 수행함.
+
+```
+root@ :/# dd if=/dev/zero of=testd.out bs=1M count=10 oflag=direct
+```
+
+CPU의 자원할당에서 --cpu-share에 상대적인 값을 입력했던 것 처럼 --device-write-iops, 
+--device-read-iops 에도 상대적인 값을 입력함. 예를 들어 --device-write-iops의 값이
+2배 차이 나는 container로 쓰기 작업을 수행하면 수행 시간 또한 2배 가량 차이가 나는 것을
+알 수 있음.
+
+```
+# docker run -it \
+  --device-write-iops /dev/xvda:5 \
+  ubuntu:14.04
+
+
+root@:/# dd if=/dev/zero of=test.out bs=1M count=10 oflag=direct
+```
+
+```
+# docker run -it \
+  --device-write-iops /dev/xvda:10 \
+  ubuntu:14.04
+  
+root@:/# dd if=/dev/zero of=test.out bs=1M count=10 oflag=direct
+```
+
