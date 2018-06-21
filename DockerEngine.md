@@ -1667,3 +1667,83 @@ root@:/# dd if=/dev/zero of=test.out bs=1M count=10 oflag=direct
 root@:/# dd if=/dev/zero of=test.out bs=1M count=10 oflag=direct
 ```
 
+
+#### 2.9.4 container 저장 공간 설정
+ 
+ container 내부에서 사용되는 file system의 크기는 docker가 사용하고 있는 storage driver에 따라
+ 조금씩 다름. 예를 들어 docker engine이 AUFS storage를 driver로 사용하도록 설정되어 있다면
+ container는 host와 저장 공간의 크기를 공유하지만,  Devicemapper driver를 사용하고 있다면
+ container는 10GB의 저장공간을 할당받음.
+ 
+ ```
+ # docker run -i -t --name centos ubuntu:14.04
+ 
+ root@ :/# df -h
+ 
+ 
+ 
+ # docker run -i -t --name ubuntu ubuntu:14.04
+ root@ :/# df -h
+ 
+ ```
+ 
+ docker 17.03.0-ce 버전을 기준으로 container 저장 공간 크기를 개별적으로 설정하는 기능을 지원하지 않지만 
+ docker daemon에 시작 옵션을 추가해 container에 할당되는 기본 저장 공간의 크기를 설정할 수 있음.
+ 
+ 그러나 이 설정은 docker engine이 device mapper storage driver를 사용할 수 있게 설정돼 있어야만
+ 정상적으로 사용할 수 있음.
+ 
+ 
+ 부록 A를 참고해 다음 설정을 기존의 DOCKER_OPTS에 추가함. --storage-driver는 백엔드 storage driver로서
+ device mapper를, --stoage-opt dm.basesize는 container의 기본저장 공간의 크기를 20GB로 설정함.
+ 
+ ```
+ DOCKER_OPT=".... --storage-driver=devicemapper --storage-opt dm.basesize=20G ...."
+ ```
+ 
+ 
+ 
+ ```
+ (참고)
+  docker info 명령어를 입력하면 현재 docker가 사용 중인 storage driver를 확인할 수 있음.
+  
+  # docker info 
+  ....
+  Storage Driver : aufs
+  ....
+  
+  device mapper를 쓰지 않다가 --storage-driver 옵션으로 devicemapper를 사용하면 기존의 docker에서
+  사용했던 container와 image를 사용할 수 없음. 예를 들어 AUFS 드라이버를 사용 중인 docker engine에서 위의
+  --storage-driver=devicemapper를 지정하면 image, container와 같은 내용이 초기화 됨.
+  이는 docker가 storage driver별로 image, container file을 저장하기 때문이며, 기존의 storage driver
+  에서 사용했던 내용을 재사용하고 싶다면 설정 file에서 --storage-driver를 원래 사용하던 driver로
+  변경하면 됨. 이러한 storage별 data는 /var/lib/docker에 저장됨.
+  
+  # ls /var/lib/docker/
+  aufs containers devicemapper image ...
+  
+ ```
+ 
+ 
+ dm.basesize 옵션의 값은 docker engine이 image를 내려 받을 때 system 자체의 옵션으로서 내장시키기 때문에
+ docker daemon의 dm.basesize 옵션을 변경해도 기존에 사용하던 10G인 설정을 가진 image가 존재한다면 container
+ 의 file system 크기는 변하지 않음. 따라서 docker에 초기 상태로 초기화 한 뒤 사용해야만 정상적으로 적용됨.
+ 단, 이 작업은 docker의 data를 저장하는 directory를 삭제하 대문에 모든 file를 미리 백업해주는 것을 권장
+ 
+ 
+ ```
+ # service docker stop
+ # rm -rf /var/lib/docker
+ # service docker start
+ ```
+ 
+ 위 옵션이 정상적으로 적용됐다면 container 내부의 file system 크기가 20GB로 늘어난 것을 확인할 수 있음.
+ 
+ ```
+ # docker run -i -t --name centos2 ubuntu:14.04
+ root@:/# df -h
+ ```
+ 
+ 각 storage driver에 대한 특징은 뒤에서 자세히 설명하겠지만 devicemapper를 사용해야만 container의
+ 저장 공간을 늘릴 수 있으므로 개발 중인 container application이 device mapper에 적합하지 않다면 이 방법
+ 을 권장하지 않음.
