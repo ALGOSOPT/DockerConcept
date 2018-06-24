@@ -810,6 +810,7 @@ stateful 한 container는 container 자체에서 data를 보관하므로 지양�
 <a name="2-7"></a>
 ### 2.7 Docker Network
 
+<a name="2-7-1"></a>
 ##### 2.7.1 Docker Network 구조
 
 이 전에 Container 내부에서 ifconfig 를 입력해 Container의 network interface에 eth0과 lo 네트워크 인터페이스가 있는 것을 확인했음.
@@ -868,7 +869,7 @@ binding돼 외부와 통신할 수 있음.
 # brtcl show docker0
 
 ```
-
+<a name="2-7-2"></a>
 #### 2.7.2 Docker Network 기능
 
 Container를 생성하면 기본적으로 docker0 bridge를 통해 외부와 통신할 수 있는 환경을 사용할 수 있지만, 
@@ -1050,7 +1051,7 @@ network_container_1과 같게 설정됨.
 이를 그림으로 나타내면 아래와 같음.
 
 ![그림2.16](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.16.jpg){: width="50%" height="50%"}
-<img src="https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.16.jpg" width="300" height="300">
+
 
 __Bridge network와 --net-alias
 
@@ -1076,7 +1077,7 @@ bridge type의 network와 run 명령어의 --net-alias 옵션을 함께 쓰면 �
   
 ```
 
-inspect 명령어오 각 container의 IP를 확인해보자
+inspect 명령어 각 container의 IP를 확인해보자
 ```
 # docker inspect network_alias_container1 | grep IPAddress
 ```
@@ -1150,8 +1151,10 @@ root@:/# dig alicek106
 
 
 ---
+<a name="2-8"></a>
 ### 2.8 Container Logging
 
+<a name="2-8-1"></a>
 #### 2.8.1 json-file 로그 사용하기
 
 Container 내부에서 어떤 일이 일어나는지 아는 것은 debugging 뿐만 아니라 운영측면에서도 중요함.
@@ -1267,7 +1270,7 @@ logs 명령으로 정제되지 않은 JSON data를 볼 수 있으.ㅁ
 
 DOCKER_OPTS="--log-driver=syslog"
 ```
-
+<a name="2-8-1-1"></a>
 #### 2.8.1 syslog 로그
 
 Container의 Log는 JSON 뿐 아니라 syslog로 보내 저장하도록 설정할 수 있음. syslog는 유닉스 계열 운영체제에서 log를 
@@ -1417,6 +1420,7 @@ rsyslog는 ubuntu에서 쓸 수 있는 기본적인 log 방법이므로 별도�
 연동하면 web interface를 활용해 편리하게 log를 확인할 수 있음.
 
 ---
+<a name="2-9"></a>
 ### 2.9 Container 자원 할당 제한
 
 container를 생성하는 run, create 명렁어에서 container의 자원 할당량을 조정하도록 option을 입력할 수 있음.
@@ -1429,6 +1433,7 @@ container의 자원할당 option을 설정하지 않으면, host의 자원을 �
 
 자원 할당을 제한하기 위해 container에 적용할 수 있는 option은 많지만, 여기서는 대표적인 몇가지만 설명.
 
+<a name="2-9-1"></a>
 #### 2.9.1 Container memory 제한
 docker run 명령어에 --memory를 지정해 container의 memory를 제한 할 수 있음. 입력할 수 있는 단위는 m, g.
 
@@ -1472,7 +1477,7 @@ memory가 부족해 container가 실행되지 않음.
   ubuntu:14.04
 ```
 
-
+<a name="2-9-2"></a>
 #### 2.9.2 container CPU 제한
 
 **--cpu-shares**
@@ -1610,7 +1615,7 @@ cpu를 적게 사용하고 있음을 알 수 있음.
 # ps aux | grep stress
 ```
 
-
+<a name="2-9-3"></a>
 #### 2.9.3 Block I/O 제한
 Container를 생성할 때 아무런 option도 설정하지 않으면 container 내부에서 file을 읽고 쓰는 대역폭에
 제한이 설정되지 않음.
@@ -1665,7 +1670,7 @@ root@:/# dd if=/dev/zero of=test.out bs=1M count=10 oflag=direct
 root@:/# dd if=/dev/zero of=test.out bs=1M count=10 oflag=direct
 ```
 
-
+<a name="2-9-4"></a>
 #### 2.9.4 container 저장 공간 설정
  
  container 내부에서 사용되는 file system의 크기는 docker가 사용하고 있는 storage driver에 따라
