@@ -855,7 +855,7 @@ veth로 시작하는 interface는 container를 시작할 때 생성됐으며, �
 veth interface뿐 아니라 docker0 이라는 bridge도 존재하는데, docker0 bridge는 각 veth interface와 binding돼
 host의 eth0 interface와 이어주는 역할을 함. 즉 container와 host의 network는 아래 그림과 같은 구성
 
-![그림2.15](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.15.jpg)
+![그림2.15](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.15.jpg){: width="50%" height="50%"}
 
 정리하면 container의 eth0 interface는 host의 veth...라는 interface와 연결됐으며 veth interface는 docker0 bridge와
 binding돼 외부와 통신할 수 있음.
@@ -1049,7 +1049,7 @@ network_container_1과 같게 설정됨.
 
 이를 그림으로 나타내면 아래와 같음.
 
-![그림2.16](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.16.jpg)
+![그림2.16](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.16.jpg){: width="50%" height="50%"}
 
 
 __Bridge network와 --net-alias
@@ -1107,7 +1107,7 @@ Container 3개의 IP로 각각 Ping이 전송된 것을 확인할 수 있음.
 다음 그림은 docker network 에서 사용하는 내장 DNS와 --net-alias의 관계를 보여줌
 
 
-![그림2.17](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.17.jpg)
+![그림2.17](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.17.jpg){: width="50%" height="50%"}
 
 Docker의 DNS는 host 이름으로 유동적인 Container를 찾을 때 주로 사용됨.
 
