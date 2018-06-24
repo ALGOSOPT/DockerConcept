@@ -1050,7 +1050,7 @@ network_container_1과 같게 설정됨.
 이를 그림으로 나타내면 아래와 같음.
 
 ![그림2.16](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.16.jpg){: width="50%" height="50%"}
-
+<img src="https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.16.jpg" width="300" height="300">
 
 __Bridge network와 --net-alias
 
