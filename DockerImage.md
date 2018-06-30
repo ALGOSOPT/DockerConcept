@@ -121,3 +121,162 @@ docker images 명령어로 두 번 째 이미지인 commit_test:second도 생성
 ```
 # docker images
 ```
+
+commit_test라는 이름에 first라는 tag로 image가 생성됨. ubuntu:14.04 image의 크기와 비교했을 때
+차이가 없는 것은 container의 변경사항에 해당하는 file인 first라는 파일이 수 bit에 불과하기 때문.
+
+
+이번에는 commit_test:first이미지로 새로운  image를 생성해보자.  commit_test:first 이미지로
+container를 생성한 뒤 second라는  file을 추가해 commit_test:second 라는 image를 새롭게
+생성. image를 생성하는 과정은  commit_test:first image를 생성할 때와 같음.
+
+```
+# docker run -i -t --name commit_test2 commit_test:first
+
+root@:/# ehco test_second >> second
+
+#docker commit \
+-a "alicek106" -m "my second commit" \
+commit_test2 \
+commit_test:second
+```
+
+docker images 명령어로 두 번째 image인 commit_test:second도 생성되었는지 확인
+```
+# docker images
+```
+
+---
+
+### 2.3.2 image 구조의 이해
+
+
+
+위와 같이 container를 image로 만드는 작업은 commit 명령어로 쉽게 구성할 수 있음.
+
+그러나 image를 좀 더 효율적으로 다루기 위해 container가 어떻게 image로 만들어지며,
+image의 구조는 어떻게 되어 있는지 알 필요가 있음.
+
+다음 명령어를 입력해 image의 좀 더 자세한 정보를 확인해보자
+
+```
+# docker inspect ubuntu:14.04
+# docker inspect commit_test:first
+# docker inspect commit_test:second
+```
+
+
+
+```
+(참고) inspect 명령어는 container 뿐만 아니라 network, volume, image등 모든 
+docker 단위의 정보를 얻을 때 사용할 수 있음. 단, 이름이 중복될 경우 container에 대해
+먼저 수행되므로 --type을 명시하는 것이 좋음.
+```
+
+
+docker inspect 명령어는 많은 정보를 출력하지만 주의 깊게 살펴볼 항목은 가장 아랫부분에 있는
+Layers 항목.
+
+ubuntu:14.04, commit_test:first, commit_test:second 에 대한 각 Layers 항목은 다음과 같다.
+16진수 hash 값 중 뒷부분을 생략했으며, ID값은 아래 image와 다를 수 있음.
+
+다음 그림은 각 image에 대한 inspect명령어의 출력 결과 중 Layers 항목만 나타낸 것.
+
+그림 2.33
+
+이를 좀 더 보기 쉽게 나타내면,
+
+그림 2.34
+
+
+docker images에서 위 3개의 image 크기가 각각 188MB라구 출력되도 188MB 크기의 image가
+3개 존재하는 것은 아님.
+
+image를 commit할 때 container에서 변경된 사항만 새로운 layer로 저장하고,
+그 layer를 포함해 새로운 image를 생성하기 때문에 전체 image의 실제 크기는
+188MB + first file의 크기 + second file의 크기가 됨.
+
+first file은  commit_test:first image를 생성할 때 사용했던 
+container에서 변경된 사항이고,
+second file은 commit_test:second image를 생서할 때
+container에서 변경된 사항.
+
+
+
+그림 2.35
+
+즉, 위 그림과 같이 ubuntu:!4.04 image를 기반으로 생성했던 첫 번쨰 container commit_test에서
+변경된 사항인  first file이 sha256:cc1bcbb270d layer가 됨.
+
+이는 commit_test:second image를 생성할 때도 같음.
+
+
+```
+(참고) 이러한 image layer의 구조는 docker history 명령을 통해 좀 더 쉽게 확인할 수 있음.
+이 명령어는image가 어떤 layer로 생성되었는지를 출력
+
+
+# docker history commit_test:second
+
+```
+
+이번에는 생성한 image를 삭제해보자. docker rmi 명령어를 사용하면 image를 삭제할 수 있음.
+
+```
+# docker rmi commit_test:first
+```
+
+그러나 위 명령어는 다음과 같은 error를 출력함.
+
+
+
+image를 사용 중인 container가 존재하므로 해당 image를 삭제할 수 없다는 내용. container를 삭제할 수 없다는 내용.
+container를 삭제할 때 사용했던 docker rm -f  [container 이름] 처럼 -f 옵션을 추가해 image를 강제로 삭제할수도 
+있지만 이는 image layer file을 실제로 삭제하지 않고 image이름만 삭제하기 때문에 의미가 없음.
+
+따라서 다음 명령어와 같이 container를 삭제한 뒤 image를 삭제하게 함.
+
+```
+# docker stop commit_test %% docker rm commit_test2
+
+# docker rmi commit_test:first 
+```
+
+
+```
+(참고) Container가 사용 중인 image를 docker rmi -f 로 강제로 삭제하면 image의 이름이 
+<none>으로 변경되며, 이러한  image들을  dangling image라고 함.
+dagling image는 docker images -f dangling=true 명령어로 사용해 별도로 확인할 수 있음
+
+# docker images -f dangling=true
+
+
+사용 중이지 않은 dangling image는 docker image prune 명령어로 한꺼번에 삭제할 수 있음.
+
+# docker image prune
+```
+
+commit_test:first image를 삭제했다고 해서 실제로 해당 image의 layer file이 삭제되지는 않음.
+commit_test:first image를 기반으로 하는 하위 image인 commit_test:second가 존재하기 때문.
+
+따라서 실제 image file을 삭제하지 않고 layer에 부여된 이름만 삭제함.
+rmi 명령어의 출력 결과인 Untagged: ... 는 image에 부여된 이름만 삭제한다는 것을 뜻함.
+
+그림 2.36
+
+
+이번에는 commit_test:second 이미지를 삭제해보자. commit_test:second image를 사용하고 있는
+container가 없으니 바로 삭제할 수 있음.
+
+```
+# docker rmi commit_test:second
+```
+
+"Deleted:"라는 출력 결과는 image layer가 실제로 삭제되었음을 뜻함. image의 이름인 
+commit_test:second 를 가리키는 ID와 실제 layer를 가리키는  ID가 삭제됐는데
+실제 layer file은 sha256:0b168 ... 라는 ID에 의해 참조됨.
+즉, 삭제되는 image의 부모 image가 존재하지 않아야만 해당 image의 file이 실제로
+삭제됨.
+
+
+그
