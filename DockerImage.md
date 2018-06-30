@@ -279,4 +279,179 @@ commit_test:second 를 가리키는 ID와 실제 layer를 가리키는  ID가 �
 삭제됨.
 
 
-그
+그렇지만  commit_test:second image를 삭제했다고 해서 ubuntu:14.04 image도 함께
+삭제되는 것은 아님. 앞에서는 second, first file이 존재하는 layer만 삭제 되었는데,
+commit_test:first image tag는 이미 삭제되어 존재하지 않지만 ubuntu image를
+가리키는 ubuntu:14.04 image tag는 아직 존재하기 때문임.
+
+따라서 ubuntu의 image layer는 commit_test:second image를 삭제할 때 함꼐 삭제
+되는 layer의 범위에 포함되지 않음.
+
+### 2.3.3 Image 추출
+
+docker image를 별도로 저장하거나 옮기는 등 필요에 따라 image를 단일 binary file로 저장해야
+할 때가 있음. docker save 명령어를 사용하면 container의 command, image 이름과 tag
+등 image의 모든 meta data를 포함해 하나의 file로 추출할 수 있음. -o option에는 추출될
+파일명을 입력함
+
+```
+# docker save -o ubuntu_14_04.tar ubuntu:14.04
+```
+
+추출된 image는 load 명령어로 docker에 다시 로드할 수 있음.
+save 명령어로 추출된 image는 image의 모든 meta data를 포함하기 때문에 load명령어로 image
+를 로드하면 이전의 image와 완전히 동일한 image가 docker engine에 생성됨.
+
+```
+# docker load -i ubuntu_14_04.tar
+```
+
+save, load 명령어와 유사하게 사용할 수 있는 명령어로 export, import가 있음.
+docker commit 명령어로 container를 image로 만들면 container에서 변경된 사항 뿐만 아니라
+container가 생성될 때 설정된 detached mode, container command의 설정 등도 image에 함께 저장됨
+
+그러나 export 명령어는 container의 file system을 tar file로 추출하며 container 및 image에
+대한 설정 정보를 저장하지 않음.
+
+export와 import는 다음 예제처럼 사용할 수 있음. export 명령어는 mycontainer라는 container의
+file system을 rootFS.tar 파일로 추출하고, 이  file을 import명령어로 myimage:0.0 이라는 image로 다시 저장함.
+
+```
+# docker export -o rootFS.tar mycontainer
+# docker import rootFS.tar myimage:0.0
+
+```
+
+그러나 image를 단일 파일로 저장하는 것은 효율적인 방법이 아님. 추출된 image는 layer 구조의 파일이 아닌
+단일 file이기 때문에 여러 버전의 image를 추출하면 image 용량을 각기 차지하게 됨.
+예를 들어, ubuntu:14.04 image와 commit_test:first 라는 두 개의 image를 추출하면
+각각 188MB의 파일이 생성되어 총 376MB를 차지하게 될 것임.
+
+
+---
+
+### 2.3.4 image 배포
+
+이미지를 생성했다면 이를 다른 docker engine에 배포할 방법이 필요함. save나 export와 같은 방법으로
+image를 단일 파일로 추출해서 배포할 수도 있지만 image file의 크기가 너무 크거나 docker engine의
+수가 많다면 image를 파일로 배포하기 어려움. 또한 docker image 구조인 layer 형태를 이용하지 않으므로
+매우 비효율적임.
+
+
+이를 해결하는 첫 번째 방법은 docker 에서 공식적으로 제공하는 docker hub image 저장소를 사용하는 것.
+docker hub는 docker image를 저자하기 위한 cloud service 라고 생각하면 이해하기 쉬움.
+
+사용자는 단지 image를 올리고(docker push) 내려받기(docker pull)만 하면되므로 매우 간단하게 사용할 
+수는 있음. 단, 결제를 하지 않으면 Private 저장소의 수에 제한이 있는 것이 단점.
+Public 저장소는 무료로 사용할 수 있으므로 만든 image를 다른 사용자에게도 공개해도 상관없다면
+docker hub를 사용하는 것도 좋은 선택.
+
+두 번째 방법은 docker private registry를 사용하는 것으로 사용자가 직접 image 저장소를 만들 수 있음.
+
+그러나 사용자가 직접 image 저장소 및 사용되는 server, 저장 공간 등을 관리해야 하므로 docker hub보다는
+사용법이 까다로움. 그러나 회사의 내부망과 같은 곳에서 docker image를 배포해야 한다면 docker private
+registry가 더 좋은 방안이 될 수있음
+
+
+#### 2.3.4.1 docker hub registry
+
+docker hub site에서 docker search 명령어를 입력했을 떄와 같이 image를 검색할 수 있으며,
+image 저장소를 클릭하면 image에 대한 자세한 설명을 볼 수 있음
+
+그림 2.37
+그림 2.38
+
+docker hub에 여러분의 저장소를 생성해보자. 저장소를 생성하려며 login이 필요하므로 
+Sign up하시고요,,
+
+
+**image저장소 생성 **
+
+가입한 뒤 로그인을 하면 아래와 같은 화면을 볼 수 있음
+Create Repository 항목을 클릭해 저장소를 생성
+
+그림 2.39
+
+저장소를 생성하기 전 저장소에 대한 정보를 입력해야 함.
+저장소에 저장될 image의 이름, image의 간단한 설명과 전체 설명을 입력함.
+
+그림 2.40
+
+마지막으로 저장소의 Visibility를 설정해 저장소를 다른 사람에게 공개할지 여부를 결정.
+Public 으로 설정하면 다른 사용자가 docker search와 pull 명령어로 image를 사용할 수 있지만
+private로 설정하면 저장소의 접근 권한이 있는 계쩡으로 로그인 해야 저장소를 사용할 수 있음.
+
+기본적으로 비공개 저장소는 1개만 무료이고 그 이상 사용하려면 매달 일정 금액을 결제해야 함.
+
+여기서는 공재 저장소를 생성하겠다. create 버튼을 눌러 저장소를 생성
+
+그림 2.41
+
+이 저장소의 이름은 601keccila/myimagename 임. 회원 가입을 할 떄 입력한 이름이 저장소 이름이 되며,
+위 예시에서는 계정 이름이 601kecila이기 때문에 저장소 이름 또한 601keclia로 설정됨,
+myimagename은 실제로 이 저장소에 저장될 image의 이름.
+
+
+**저장소 에 이미지 올리기**
+
+방금 생성한 저장소에 image를 올려보자. docker에서 다음 명령어를 입력해 저장소에 올릴 image를 생성
+
+```
+# docker run -i -t --name commit_container1 ubuntu:14.04
+root@:/# echo my first push >> test
+
+# docker commit commit_container1 myimagename:0.0
+```
+
+
+
+ubuntu:14.04 이미지에 test라는 파일을 생성해 변경 사항을 만든 뒤 myimagename:0.0 이라는 image로
+commit함. 그러나 이 이름으로는 image를 저장소에 올릴 수 없음. 2.2.1절 "도커 이미지"에서 설명했듯,
+이미지의 접두어는 image가 저장되는 저장소 이름으로 설정함.
+
+즉, 특정 이름의 저장소에 image를 올리기 위해서는 저장소 이름을 앞에 접두어로 추가해야함.
+
+docker tag 명령어를 사용하면 image의 이름을 추가할 수있음. tag 명령어의 형식은 'docker tag [기존의 이미지 이름]
+[새롭게 생성될 이미지 이름] 으로서, 다음 예시는 myimagename:0.0 이미지에 601kecila/myimagename:0.0 
+이라는 이름을 추가함.
+
+```
+# docker tag myimagename:0.0 601kecila/myimagename:0.0
+```
+
+```
+(참고) tag 명령어로 image의 이름을 변경했다고 해서 기존의 이름이 사라지는 것은 아니며
+같은 image를 가리키는 새로운 이름을 추가할 뿐.
+
+# docker images
+```
+
+이미지 이름을 변경하고 나면 다음 명령어를 입력해 docker hub server에 로그인함. 
+로그인 하지 않으면 생성한 저장소에 image를 올릴 수 있는 권한을 가질 수 없음.
+
+참고로 회원 가입을 할 때 사용한 email과 비밀번호를 입력함.
+
+```
+# docker login
+```
+
+```
+(참고) docker engine에서 로그인한 정보는 /계정 명/.docker/config.json 파일에 저장됨.
+```
+
+
+login한 뒤 push명령어를 입력해 image를 저장소에 올려보자. 명령어의 출력 결과를 보면 하나의
+layer에만 저장소로 전송되고 나머지 layer는 ubuntu:14.04 image에서 생성되어 docker hub의
+ubuntu 이미지 저장소에 이미 존재하므로 전송되지 않음.
+
+```
+# docker push 601keclia/myimagename:0.0
+```
+
+docker hub의 저장소에 실제로 이미지가 올려졌는지 확인.
+Tags 항목에서 image를 확인할 수 있음.
+
+그림 2.42
+
+
+
