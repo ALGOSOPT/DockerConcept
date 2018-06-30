@@ -453,5 +453,9 @@ Tags 항목에서 image를 확인할 수 있음.
 
 그림 2.42
 
+docker에서 이 이미지를 내려받으려면 별도로 로그인하지 않고 다음 명령어를 입력하면 된다
 
+```
+# docker pull 601kecila/myimagename:0.0
+```
 
