@@ -39,3 +39,43 @@ docker engine의 기능을 수행하는데, docker 프로세스가 실행되어 
 **docker daemon** 이라고 함.
 
 
+다른 하나는 docker client. Docker Daemon은 API를 입력 받아 docker engine의 기능을 수행하는데, 
+이 API를 사용할 수 있도록 CLI(Command Line Interface)를 제공하는 것이 docker client.
+사용자가 docker로 시작하는 명령어를 입력하면 docker client 를 사용하는 것미여, 
+docker client는 입력된 명령어를 local에 존재하는 docker daemon에게 API로서 전달.
+
+이때 Docker Client는 /var/run/docker.sock에 위치한 unix socket을 통해 docker daemon의 API를
+호출함. docker client가 사용하는 unix socket 같은 host 내에 있는 docker daemon에게 명령을
+전달할 때 사용됨.
+
+tcp로 워격에 있는 docker daemon을 제어하는 방법도 있지만 이는 뒤에서 자세히 설명함.
+
+그림 2.68
+
+
+즉, 터미널이나, PuTTY 등으로 docker 가 설치된 host에 접속해 docker 명령어를 입력하면
+아래와 같은 과정으로 docker가 제어됨.
+
+1. 사용자가 docker ps 같은 docker 명령어를 입력함.
+
+2. /usr/bin/docker는 /var/run/docker.sock 유닉스 소켓을 사용해 docker daemon에게
+명령어를 전달함.
+
+3. docker daemon은 이 명령어를 parsing하고 명령어에 해당하는 작업을 수행함.
+
+4 수행 결과를 docker client에게 반환하고 사용자에게 결과를 출력함.
+
+
+이 것은 아무런 설정을 하지 않았을 때 일반적으로 docker daemon을 제어하는 순서.
+docker daemon에 각종 옵션을 추가해 실행한다면 위 순서에 별도의 과정이 포함될 수 있음.
+
+
+---
+
+### 2.5.2 Docker Daemon Execute
+
+docker daemon은 일반적으로 아래와 같으 명령어로 시작, 정지할 수 있음. 
+ubuntu에서는 docker가 설치되면 자동으로 service로 등록되므로 host가 
+재시작되더라도 자동으로 실행.
+
+
