@@ -4,8 +4,7 @@
 image의 이름을 구성하는 저장소, image 이름, tag를 잘 관리하는 것 뿐만 아니라 image가 어떻게
 생성되고 삭제되는지, image의 구조는 어떻게 돼 있는지 등을 아는 것 또한 중요함. 
 
-그림 2.32
-
+![그림2.32](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.32.jpg)
 
 데비안 운영체제에서 apt-get install을 실행하면 apt repository에서 package를 내려받고 
 레드햇 운영체제에서 yum install을 실행하면 yum repository에서 package를 내려받듯이
@@ -182,11 +181,11 @@ ubuntu:14.04, commit_test:first, commit_test:second 에 대한 각 Layers 항목
 
 다음 그림은 각 image에 대한 inspect명령어의 출력 결과 중 Layers 항목만 나타낸 것.
 
-그림 2.33
+![그림2.33](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.33.jpg)
 
 이를 좀 더 보기 쉽게 나타내면,
 
-그림 2.34
+![그림2.34](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.34.jpg)
 
 
 docker images에서 위 3개의 image 크기가 각각 188MB라구 출력되도 188MB 크기의 image가
@@ -203,7 +202,7 @@ container에서 변경된 사항.
 
 
 
-그림 2.35
+![그림2.35](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.35.jpg)
 
 즉, 위 그림과 같이 ubuntu:!4.04 image를 기반으로 생성했던 첫 번쨰 container commit_test에서
 변경된 사항인  first file이 sha256:cc1bcbb270d layer가 됨.
@@ -262,7 +261,7 @@ commit_test:first image를 기반으로 하는 하위 image인 commit_test:secon
 따라서 실제 image file을 삭제하지 않고 layer에 부여된 이름만 삭제함.
 rmi 명령어의 출력 결과인 Untagged: ... 는 image에 부여된 이름만 삭제한다는 것을 뜻함.
 
-그림 2.36
+![그림2.36](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.36.jpg)
 
 
 이번에는 commit_test:second 이미지를 삭제해보자. commit_test:second image를 사용하고 있는
@@ -358,8 +357,8 @@ registry가 더 좋은 방안이 될 수있음
 docker hub site에서 docker search 명령어를 입력했을 떄와 같이 image를 검색할 수 있으며,
 image 저장소를 클릭하면 image에 대한 자세한 설명을 볼 수 있음
 
-그림 2.37
-그림 2.38
+![그림2.37](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.37.jpg)
+![그림2.38](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.38.jpg)
 
 docker hub에 여러분의 저장소를 생성해보자. 저장소를 생성하려며 login이 필요하므로 
 Sign up하시고요,,
@@ -370,12 +369,12 @@ Sign up하시고요,,
 가입한 뒤 로그인을 하면 아래와 같은 화면을 볼 수 있음
 Create Repository 항목을 클릭해 저장소를 생성
 
-그림 2.39
+![그림2.39](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.39.jpg)
 
 저장소를 생성하기 전 저장소에 대한 정보를 입력해야 함.
 저장소에 저장될 image의 이름, image의 간단한 설명과 전체 설명을 입력함.
 
-그림 2.40
+![그림2.40](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.40.jpg)
 
 마지막으로 저장소의 Visibility를 설정해 저장소를 다른 사람에게 공개할지 여부를 결정.
 Public 으로 설정하면 다른 사용자가 docker search와 pull 명령어로 image를 사용할 수 있지만
@@ -385,7 +384,7 @@ private로 설정하면 저장소의 접근 권한이 있는 계쩡으로 로그
 
 여기서는 공재 저장소를 생성하겠다. create 버튼을 눌러 저장소를 생성
 
-그림 2.41
+![그림2.41](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.41.jpg)
 
 이 저장소의 이름은 601keccila/myimagename 임. 회원 가입을 할 떄 입력한 이름이 저장소 이름이 되며,
 위 예시에서는 계정 이름이 601kecila이기 때문에 저장소 이름 또한 601keclia로 설정됨,
@@ -451,7 +450,7 @@ ubuntu 이미지 저장소에 이미 존재하므로 전송되지 않음.
 docker hub의 저장소에 실제로 이미지가 올려졌는지 확인.
 Tags 항목에서 image를 확인할 수 있음.
 
-그림 2.42
+![그림2.42](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.42.jpg)
 
 docker에서 이 이미지를 내려받으려면 별도로 로그인하지 않고 다음 명령어를 입력하면 된다
 
