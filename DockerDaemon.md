@@ -139,6 +139,109 @@ update에서 삭제될 예정이므로 dockerd를 사용하는 것이 좋음.
 
 docker daemon에 적용할 수 있는 option은 매우 많음. --help의 출력결과를 자세히 살펴보면 registry container
 를 구축할 때 사용했던 --insecure-registry도 있고 container의 logging을 설정할 때 사용했던 --log-driver,
-storage 
+storage backend를 변경할 때 사용했던 --storage-opt도 있음. 
 
+이 전 장에서 부록 A 'Docker 데몬 시작 옵션 변경하기'를 참고해 사용했던 옵션은 전부 Docker Daemon에 추가적인
+옵션을 부여해 service로서 시작한 것.
+
+물론 부록 A에서 설명한 방법을 사용하지 않고 옵션을 직접 추가해 Docker Daemon을 실행할 수도 있음.
+다음과 같으 명령어는 Docker Private Registry 장에서 설명했던 --insecure-registry 옵션을 사용하도록 Docker Daemon을 직접
+실행함.
+
+```
+# dockerd --insecure-registry=192.168.99.100:5000
+```
+
+그러나 이전 절의 마지막에서 설명했던 바와 같이 dockerd 명령어로 docker daemon을 직접 실행하는 것보다
+Docker 설정 파일을 수정한 뒤 docker daemon이 설정 file을 읽어 서비스로 실행되게 하는 것이 일반적
+
+이번 절에서는 Docker Daemon의 옵션을 설명하기 위해 dockerd 명령어오 예를 들지만 실제로 사용할 때는
+option을 그대로 설정 파일의 DOCKER_OPTS에 입력하면 됨.
+
+예를 들어, 다음의 두 방식은 동일하게 Docker Daemon을 설정하며, 직접 Docker Daemon을 실행하느냐 또는 
+서비스로 실행하느냐의 차이만 있음.
+
+다음 명령어는 dockerd로 직접 Docker Daemon을 실행함.
+
+```
+# dockerd -H tcp://0.0.0.0:2375 --insecure-registry=192.168.100.99:5000 --tls=false
+```
+
+아래 예제의 설정 파일인 /etc/default/docker는 ubuntu 14.04에서 Docker를 실행하는 경우의 설정 file.
+
+docker 라는 이름의 서비스가 이 파일을 읽어 docker daemon 서비스로서 실행함
+
+```
+# vi /etc/default/docker
+
+
+```
+
+```
+(참고)Docker Daemon의 설정 옵션은 매우 많으면서 여기서 모든 옵션을
+설명하지는 않음. 전체 옵션의 설명을 확인하고 싶다면 Docker 공식 메뉴얼을 참조
+하셈.
+```
+
+
+#### 2.5.3.1 Docker Daemon 제어 : -H
+
+-H 옵션은 도커 Daemon의 API를 사용할 수 있는 방법을 추가함. 아무런 옵션을 설정하지 않고 Docker Daemon을 실행하면
+Docker Client인 /usr/bin/docker를 위한 유닉스 socker인 /var/run/docker.sock을 사용함.
+
+그러므로 단순히 dockerd를 입력해 docker daemon을 실행해도 docker client의 CLI을 사용할 수 있음.
+
+즉, 다음의 두 명령어는 차이가 없음.
+
+```
+# dockerd
+# dockerd -H unix:///var/run/docker.sock
+```
+
+-H에 IP주소와 port 번호를 입력하면 원격 API인 Docker remote API로 도커를 제어할 수 있음.
+Remote API는 Docker Client와 다르게 Local에 있는 Docker Daemon이 아니더라도 제어할 수 있으며
+RESTful API 형식을 띠고 있으므로 HTTP 요청으로 docker를 제어할 수 있음.
+
+다음과 같이 Docker Daemon을 실행하면 host에 존재하는 모든 network interface의 IP주소와
+2375번 port 를 바인딩해 입력을 받음.
+
+```
+# dockerd -H tcp://0.0.0.0:2375
+```
+
+-H 에 unix:///var/run/docker.sock을 지정하지 않고, 위와 같이 Remote API만을 위한 
+Binding 주소를 입력했다면 unix socket은 비활성화 되므로 docker client를 사용할 수 
+없게 되며, docker로 시작하는 명령어를 사용할 수 없음. 
+
+따라서 docker client를 위한 unix 소켓과 remote API를 위한 binding 주소를 동시에
+설정함.
+
+
+다음은 host의 모든 network interface card에 할당된 IP 주소와 2375번 port로
+docker daemon을 제어함과 동시에 docker client도 사용할 수 있는 예
+
+```
+# dockerd -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375
+```
+
+docker client가 Docker Daemon에게 명령어를 수행하도록 요청할 때도 내부적으로는 같은
+API를 사용하므로 Remote API 또한 Docker Client에서 사용 가능한 모든
+명령어를 사용할 수 있음.
+
+-H로 Remote API를 사용하려면 cURL 같은 HTTP 요청 도구를 사용함.
+
+예를 들어, IP주소가 192.168.99.100인 Docker Host에서 -H로 Remote API를 허용했다면
+다른 host에서 다음과 같이 Remote API를 사용할 수 있음
+
+```
+root@:/# dockerd -H tcp://192.168.99.100:2375
+```
+
+```
+root@:/# curl 192.168.99.100:2375/version
+```
+
+그림 2.69
+
+위 
 
