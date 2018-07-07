@@ -1,0 +1,5 @@
+1장. 여기는 적을게 없지만 이렇게 적장ㅎ_ㅎ
+2장. 나는 한국인
+3장. go는 이미 설치 했어.
+4장. package. package는 header같은 것이다. fmt package는 print 함수들이 있는 것 같다.
+5장. import를 한 번만 써도 되게 Go는 만들어 놓았다. 
