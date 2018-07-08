@@ -50,7 +50,7 @@ docker client는 입력된 명령어를 local에 존재하는 docker daemon에�
 
 tcp로 워격에 있는 docker daemon을 제어하는 방법도 있지만 이는 뒤에서 자세히 설명함.
 
-그림 2.68
+![그림2.68](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.68.jpg)
 
 
 즉, 터미널이나, PuTTY 등으로 docker 가 설치된 host에 접속해 docker 명령어를 입력하면
@@ -241,7 +241,7 @@ root@:/# dockerd -H tcp://192.168.99.100:2375
 root@:/# curl 192.168.99.100:2375/version
 ```
 
-그림 2.69
+![그림2.69](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.69.jpg)
 
 위 예에서는 -H tcp://192.168.99.100:2375라는 옵션을 사용해 192.168.99.100이라는 IP주소와
 2375번 포트로 docker daemon을 바인딩했습니다. 그리고 다른 host에서 192.168.99.100:2375/version
@@ -291,7 +291,7 @@ root@docker-remote-client :/# docker version
 Client가 인증되지 않으면 Docker Daemon을 제어할 수 없도록 설정하는 방법을 설명하고자 함.
 
 
-그림 2.70
+![그림2.70](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.70.jpg)
 
 보안을 적용할 때 사용될 파일은 총 5개로서, ca.pem, server-cert.pem, server-key.pem, cert.pem, key.pem
 그림 2.64와 같이 Client측에서는 Docker Daemon에 접근하려면 ca.pem, cert.pem, key.pem 파일이 필요함
