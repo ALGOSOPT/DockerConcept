@@ -1,0 +1,168 @@
+1. 언어 배울때 가장 처음나오는 Helloworld 코드
+package main
+
+import "fmt"
+
+func main(){
+	fmt.Println("Hello, 안녕")
+}
+
+2. 다른 나라 언어 지원
+
+3. offline 이용하려면 go get code.google.com/p/go-tour/gotour로 설치
+
+4. 패키지
+main 패키지에서 실행 시작
+패키지 임포트 가능 : 디렉토리 경로 마지막 이름
+(ex) 
+import(
+	"fmt"
+	"math
+)
+
+5. 임포트
+(ex)
+import "fmt"
+import "math"
+
+math.Nextafter(2, 3) : 2 다음으로 큰(3방향이니까) 실수
+math.Nextafter(2, 1)이면 2다음으로 작은 (1방향이니까) 실수
+%g	%e for large exponents, %f otherwise. Precision is discussed below
+
+6. 익스포트
+첫 문자가 대문자로 시작하면 그 패키지를 사용하는 곳에서 접근할 수 있는 exported name
+math.Pi는 되지만 math.pi는 안됨
+
+7. 함수
+매개변수 타입은 변수명 뒤에 명시
+x int : x는 int형이다
+
+
+8. 함수(2)
+x int, y int도 되지만 x, y int도 됩니다
+
+9. 여러개의 결과
+하나의 함수는 여러개의 결과를 반환할 수 있다
+반환형에 (결과1, 결과2)로 써준다
+
+10. 이름이 정해진 결과
+반환 값에 이름을 부여하면 변수처럼 사용할 수 있다
+->return에 반환값 지정하지 않아도 된다
+(ex)
+func split(sum int) (x, y int) {
+    x = sum * 4 / 9
+    y = sum - x
+    return
+}
+
+11. 변수
+var x int
+처음에는 0(int), false(bool)로 초기화
+
+12. 변수의 초기화
+초기화하는 경우 타입 생략도 가능
+var c, python, java bool = true, false, "no!"는
+var c, python, java = true, false, "no!"로 쓸 수 있다
+
+13. 변수의 짧은 선언
+:=으로 var과 타입을 생략
+var c, python, java = true, false, "no!"는 
+c, python, java := true, false, "no!"로 쓸 수 있다
+
+14. 상수
+const키워드가 붙는다. 문자, 문자열, 숫자, boolean가 가능
+
+15. 숫자형 상수
+정밀한 값 표현 가능
+타입을 지정하지 않으면 문맥에 따라 타입을 가짐
+
+16. for
+소괄호 필요하지 않지만 중괄호는 필요함
+
+17, 18. for(2)
+while처럼 조건문만 표현할 수 있음
+(ex)
+for sum < 1000 {
+        sum += sum
+    }
+
+19. 무한 루프
+조건문 생략 for{}
+
+20. 조건문 If
+for과 마찬가지로 () 사용하지 않는다
+sprint : 문자열에 출력
+
+21. If와 짧은 명령 사용하기
+if v := math.Pow(x, n); v < lim {
+    return v
+}
+if 안쪽에서만 v 사용가능
+
+22. If와 else
+짧은 명령에서의 변수는 else에까지 사용 가능
+
+23. 루프와 함수
+package main
+
+import (
+    "fmt"
+)
+
+func abs(a, b float64) float64{
+    if a>b{
+    	return a-b
+    }else{
+    	return b-a
+    }
+}
+
+func Sqrt(x float64) float64 {
+    z := float64(1)
+    for v:=0; ; v++{
+        z1 := z
+    	z = z - (z * z - x) / (2 * z)
+        fmt.Println(v, " ", z)
+        if abs(z, z1) <=1.0e-10{
+            return z
+        }
+    }
+}
+
+func main() {
+    fmt.Println(Sqrt(2))
+}
+
+24. 기본 자료형
+bool
+string
+int, int8, int16, int32, int64
+uint, uint8, uint16, uint32, uint64, uintptr
+byte : uint8
+rune : int32
+float32, float64
+complex64, complex128
+var()로 여러개 변수 지정
+%T 타입 %v default format
+
+25. 구조체
+type Vertex struct {
+    X int
+    Y int
+}
+Vertex는 구조체의 이름
+
+26. 구조체 필드
+구조체에 속한 필드는 dot(.)로 접근
+
+27. 포인터
+구조체 포인터를 이용하여 구조체 변수 접근 가능
+
+28. 구조체 리터럴
+원하는 필드를 {Name: value}로 통해 할당
+q = &Vertex{1, 2}는 구조체 리터럴에 대한 포인터 생성
+
+29. New 함수
+new(T)는 모든 필드가 0이 할당된 T타입의 포인터 반환
+var t *T = new(T)
+t := new(T)

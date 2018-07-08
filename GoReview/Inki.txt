@@ -1,0 +1,29 @@
+1.stdout은 import “fmt”
+2.그렇군
+3.library를 받을 때는 go get
+4.import 여러개는 저렇게
+5.import를 따로도 할 수 있다
+6.export(import 받은 라이브러리)할 때 첫문자는 대문자로
+7.함수에서 반환, 매개변수 타입은 이름 뒤에 온다
+8.같은 타입의 매개변수라면 한번에 쓸 수 있다 (x int, y int ==> x, y int)
+9.함수의 반환은 여러개를 할 수 있다 (func swap(x, y string) (string, string) {…}
+10.함수의 반환 값에 이름을 줄 수 있다(fund split(sum int) (x, y int) {..}
+11.변수 선언은 var
+12.변수 초기화 방법 (var x int = 1 또는 var java = “java”)
+13.변수는 짧은 방법으로 선언 할 수 있다 (x := 1)
+14.상수는 const로 선언하고 char, string, bool, 숫자 타입
+15.숫자형 상수는  문맥에 따라 타입을 가진다 (선언 타입이 명시 안돼있으면 타입이 걍 변환됨)
+16.go의 반복문 for (while은 없음) for i:=0; i<10; i++ {…}
+17.for 2 - while문 처럼 for sum < 1000 { … }
+18.같은얘기 ㅇㅇ..
+19.무한루프 - for { … }
+20.조건문 if x < 0 { … } - 소괄호가 없음
+21.if + 짧은 명렁 - 변수 선언과 조건을 같이, if v:=match.Pow(x,n); v< lim {… }
+22.if else - if v:=match.Pow(x,n); v< lim {… } else { .. }
+23.연~~습
+24.기본 자료형에는 bool, string, int, int8 … , uint, uint8 …, rune, float, complex
+25.구조체는 type으로 명시 - type Vector struct { X int Y int }
+26.구조체 필드는 dot(.)로 접근 v := Vector{1, 2} v.X=4
+27.포인터 - C랑 비슷하나 포인터 연산은 불가능, 당연하지만 포인터 이용접근은 실제 구조체에 영향 p := Vector{1, 2} q := &p
+28.구조체 생성에 이름을 줘도됨 - r = Vector{X: 1}
+29.new 는 모든 필드가 0(zero value)이 할당된 T 타입의 포인터 반환 t := new(T)
