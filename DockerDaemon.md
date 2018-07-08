@@ -1900,5 +1900,10 @@ Btrfs는 자체적으로 SSD에 최적화되어 있으며 대체적으로 우수
  
  **stats
  
- 
+docker stats 명령어는 실핼 중인 모든 container의 자원 사용령을 stream으로 출력함.
+stats 명령어도 다음과 같이 간단히 사용할 수 있음.
+
+```
+
+``
  
