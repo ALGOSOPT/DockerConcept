@@ -499,4 +499,186 @@ docker engine이  초기화된 상태로 docker daemon이 실행됨
 
 ##### storage driver 원리
 
-2.3절 '이미지 다루기' 에서 container와 image가 어떻게 동작하는지 알아봄. 
+2.3절 '이미지 다루기' 에서 container와 image가 어떻게 동작하는지 알아보았음.
+image는 읽기 전용 파일로 사용되며 container는 이 image위에 얇은 container layer를 생성함으로써
+container의 고유한 공간을 생성한다는 것. 그러나 이 것은 기본적인 개념이고, 실제로 container 내부에서 
+읽기와 새로운 파일 쓰기, 기존의 파일 쓰기 작업이 일어 날 때는 Driver에 따라 Copy-on-Write(COW)
+또는 Redirect-on-Write(RoW) 개념을 사용함. Storage 기술을 상세하게 다루는 것은 이 책의 범위를
+벗어나므로 자세하게 설명하지는 않지만 Docker Storage Driver는 Cow, RoW를 지원해야 하므로 
+이 개념에 대해 간단히 짚고 넘어 가겠음.
+
+snap shot의 기본 개념은 '원본 파일은 읽기 전용으로 사용하되 이 file이 변경되면 새로운 공간을
+할당한다' 임. storage를 snap shot으로 만들면 snap shot 안에 어느 파일이 어디에 저장되어 있는지가
+목록으로 저장됨. 그리고 이 snapshot을 사용하다가 snapshot 안의 파일에 변화가 생기면 변경된 내역을 
+따로 관리함으로써 snapshot을 사용함
+
+그림 2.71
+
+예를 들어, 그림 2.65에서 A,B,C 파일이 snap shot으로 생성되었다면, 이 파일에 읽기 작업을 수행하는
+App은 단순히 file system의 원본 파일에 접근해 file의 내용을 읽으면 됨.
+그러나 app이 snapshot의 A 파일에 쓰기 작업을 수행해야 할 경우에는 조금 상황이 달라짐.
+
+원본 파일을 유지하면서도 변경된 사항을 저장할 수 있어야 하기 때문.
+
+이를 해결하는 방법에 따라 CoW, RoW로 나뉨.
+
+그림 2.72
+
+
+CoW는 snapshot의 파일에 쓰기 작업을 수행할 때 snapshot 공간에 원본 파일을 복사 한 뒤 쓰기 요청을 반영함.
+이 과정에서 복사하기 위해 파일을 읽는 작업 한 번, 파일을 스냅숏 공간에 쓰고 변경된 사아을 쓰는 작업으로 총 2번의 쓰기
+작업이 일어나므로 overhead가 발생함
+
+그림 2.73
+RoW는 CoW와 다르게 한 번의 쓰기 작업만 일어남. 이는 file의 snapshot 공간에 복사하는 것이 아니라
+snapshot 에 기록된 원본 파일은 snapshot 파일로 묶은(Freeze) 뒤 변경된 사항을 새로운 장소에 할당받아
+덮어 쓰는 형식. snapshot 파일은 그대로 사용하되, 새로운 블록은 변경 사항으로써 사용하는 것.
+
+
+```
+(참고) Docker를 사용하기 위해 CoW, RoW를 자세하게 알 필요는 없음. 
+여기서는 snapshot이라는 개념으로 snapshot 파일을 불변(Immutable) 상태로 유지할 수
+있다는 점만 알아두면 된당.
+```
+
+
+그림 2.74
+
+이를 Docker Container와 Image에 적용해 보자. Image Layer는 각 Snapshot에 해당하고 Container는
+이 SnapShot을 사용하는 변경점. 
+
+Container Layer에는 이전 image에서 변경된 사항이 저장되어 있으며,
+Container를 image를 만들면 변경된 사항이 snapshot으로 생성되고 하나의 image layer로서 존재하게
+됨.
+
+각 Device Driver별로 snap shot과 layer를 지칭하는 용어는 조금씩 다르지만 기본적으로
+이러한 개념을 따르고 있음
+
+
+###### AUFS Driver 사용하기
+
+
+AUFS Driver는 Ubuntu에서 Docker를 사용할 때 자동으로 설정되는 Driver이며, Docker에서
+오랜기간 사용해왔고 많은 Community에서 지원을 받고 있기 때문에 안정성 측면에서 우수하다고
+평가받고 있음. 그러나 AUFS Module은 기본적으로 kernel에 포함되어 있지 않으므로
+일부 운영체제에서는 사용할 수 없으며, 사용할 수 없는 대표적인 OS로는 RHEL, CentOS 등.
+
+AUFS Driver를 사용하려면 부록A를 참고해 다음과 같이 설정함. Ubuntu에서는 별도로 설정하지 
+않아도 됨.
+
+
+```
+DOCKER_OPTS="--storage-driver=aufs"
+```
+
+AUFS 드라이버를 사용할 수 있는 Linux 배포판인지 확인하려면 다음 명령어를 입력함.
+출력 결과는 AUFS Driver를 사용할 수 있음을 뜻함.
+
+```
+# grep aufs /proc/filesystems
+nodev aufs
+```
+
+그림 2.75
+
+AUFS Driver는 지금까지 설명한 image의 구조와 유사함. 여러 개의 image layer를 유니언 마운트 지점
+(Union Mount Point)으로 제공하며, Container Layer는 여기에 Mount해서 image를 read ony로 사용함.
+Union Mount Point는 /var/lib/docker/aufs/mnt에, Container Layer는 /var/lib/docker/aufs/diff에
+존재함.
+
+
+AUFS Driver는 Container에서 Read Only로 사용하는 파일을 변경해야 한다면 Container Layer로 전체 파일을
+복사하고, 이 file을 변경함으로써 변경사항을 반영함. 복사할 file을 찾기 위해 image의 가장 위의 layer로부터
+시작해 아래 Layer까지 찾기 때문에 크기가 큰 파일이 image의 아래쪽 layer에 있다면 시간이 더 오래 걸릴 수 있음.
+
+그러나 한 번 파일이 container layer로 복사되고 나면 그 뒤로는 이 file로 쓰기 작업을 수행함.
+
+AUFS는 Container의 실행, 삭제 등의 Container 관련 수행 작업이 매우 빠르므로 PaaS에 적합한 Driver로
+손꼽히곤 함. 또한 위에서 언급한 것과 같이 Docker에서 지원하는 대표적인 Storage Driver이기 때문에
+많은 사람이 일반적으로 사용하는 Driver 중 하나.
+
+
+##### Devicemapper Driver 사용하기
+
+Devicemapper driver는 레드햇 계열의 리눅스 배포판을 위해 개발된 Storage Driver.
+AUFS가 기본적으로 Linux Kernel에 포함되어 있지 않아 래드햇 계열에서 Docker를 사용할 수 
+없었기 때문에 Linux kernel에 포함된 DeviceMapper framework를 사용하는 방법을 생각해 낸 것.
+따라서 대부분의 Linux 배포판에서 Devicemapper driver를 사용할 수 있으며, 이는 레드햇 계열의
+리눅스인 RHEL, CentOS, Fedora뿐 아니라 Devian 계열의 리눅스도 포함됨
+
+```
+(참고) 레드햇 계열의 Linux는 Docker Engine이 1.13.0 버전 이전에는
+Devicemapper를, 1.13.0 버전 이후에서는 OverlayFS를 기본적으로 사용하도록 
+설정되어 있음.
+```
+
+Devicemapper 드라이버를 사용하려면 부록 A를 참고해 다음과 같이 설정함.
+```
+DOCKER_OPTS="--storage-driver=devicemapper"
+```
+Devicemapper 드라이버를 사용하도록 설정한 뒤, /var/lib/docker/devicemapper/devicemapper
+directory를 살펴모면 다음과 같이 2개의 파이릉ㄹ 볼 수 있음.
+
+```
+# ls -al /var/lob/docker/devicemapper/devicemapper
+
+data, metadata
+```
+
+무려 100GB 크기의 data라는 파일이 생성되어 있음. 그러나 Docker가 이 파일 전체를 실제로 사용
+하는 것은 아니며, 100GB 크기의 희소 파일(sparse file)에서 공간을 할당받아 image와 container
+layer를 저장한다는 것. 이는 image와 container의 data가 분리된 directory로 저장되는 것이 아닌
+data 파일로 이뤄진 pool에서 block 단위로 할당받는 구조.
+
+Container와 image block의 정보는 metadata 파일에 저장됨.
+
+
+```
+(참고) ls 명령어에 -lsah를 추가해 실제 Docker Daemon이 차지하는 
+파일의 크기를 확인할 수 있음.
+# ls -lsah /var/lib/docker/devicemapper/devicemapper/
+```
+
+
+그림 2.76
+
+Devicemapper Driver를 사용하는 Docker는 위 그림과 같이 Devicemapper Storage pool에서 공간을
+할당받고, image의 snapshot을 만들어 상위 layer를 생성함.image로부터 변경된 사항을 저장하는
+Container Layer에는 이 Layer들을 묶은 마운트 포인트에서 새로운 snapshot을 생성해서 사용됨.
+
+devicemapper driver를 사용하는 container는 allocate-on-demand라는 원리로 container 내부에서
+새로운 파일을 기록함. 이는  devicemapper의 pool에서 필요한 만큼의 64KB 크기의 블록 개수를
+할당해서 쓰기 작업을 수행하는 것. Container 내부에 이미 존재하는, 즉 image에 존재하던
+data에 쓰기 작업을 수행할 때는 변경하려는 원본 파일의 block을 container에 복사하 뒤, container
+내부에 복사된 block file을 수정함.
+
+이는 AUFS driver와 달리 전체 file을 복사하지 않는 다는 점에서 성능상의 이점이 있지만
+devicemapper는 container를 생성하고 삭제하는 등의 작업은 빠른 편이 아님
+
+```
+(참고) AUFS는 Devicemapper의 container 관련 성능을 비교해보고 싶다면 virtual
+box나 AWS 등으로 Ubuntu instance와 CentOS instance를 생성해 Docker를
+설치하고 Container가 생성되는 시간을 확인해보는 방법을 권장함.
+적어도 Container에 관련된 작업에서는 두 Driver 사이에 분명한 속도 차이가 있음.
+```
+
+Devicemapper의 성능을 개선하기 위해 devicemapper가 기본적으로 사용하는 mode인 loop-lvm을 direct-lvm으로
+변경할 수 있으며, 이에 대한 내용은 Docker 공식 문서를 참고.
+
+현재 사용 중인 mode는 docker info 명령어로 확인할 수 있음.
+
+```
+# docker info | grep Data
+```
+
+Devicemapper driver는 devicemapper라는 data pool 안에 container와 image data를 저장하기 때문에
+Multitenancy 환경을 위해 각 Container와 Image를 분리해 관리하는 것이 불가능함.
+따라서 실제 운영 환경에서 PaaS와 같은 용도로 사용하는 것을 권장하지 않는 추세이며,
+굳이 사용하고 싶다면 Devicemapper의 storage pool로 loop-lvm이 아닌 direct-lvm을 사용
+하는 것이 좋음
+
+
+
+##### OverlayFS Driver 사용하기
+
+
