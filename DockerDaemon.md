@@ -1904,6 +1904,124 @@ docker stats 명령어는 실핼 중인 모든 container의 자원 사용령을 
 stats 명령어도 다음과 같이 간단히 사용할 수 있음.
 
 ```
+# docker stats
+```
+stats 명령어는 실행 중인 모든 container의 CPU, memory 제한 및 사용량, network 입출력
+블록 입출력(hardware 입출력) 정보를 출력함.
+기본적으로 stream 형태로 출력되며 stream 이 아닌 한 번만 출력하는 방식으로 사용하고 싶다면
+--no-stream 옵션을 추가함.
 
-``
+
+```
+# docker stats --no-stream
+```
+
+```
+(참고) Remote API로 사용할 수 있는 stats 명령어는 docker client에서 확인할 수 있는
+자원 사용량보다 더욱 자세한 정보를 반환함. docker client는 %와 대력적인 크기로만
+출력되지만 Remote API는 모든 data를 byte 단위로 반환하며 훨씬 자세한 항목을 포함함.
+이에 대한 자세한 설명은 RemoteAPI의 stats항목을 참고하기 바람.
+```
  
+** system df
+
+system df 명령어는 docker에서 사용하고 있는 image, container, local volume의 총 개수 
+및 사용 중인 개수, 크기, 삭제함으로써 확보 가능한 공간을 출력함. 다음 예시에서 총 image의
+개수는 2개이고, 이 가운에 사용 중인 image는 1개이며, image가 차지하는 공간이 189MB임을
+확인할 수 있음. RECLAIMABLE 항목은 사용 중이지 않은 image를 삭제함으로써 확보할 수 있는
+공간을 의미함.
+
+```
+# docker system df
+```
+
+사용 중이지 않는  container와 volume은 각각 docker dontainer prune, docker volme prune으로
+한꺼번에 삭제할 수 있음. docker image prune 명령어를 사용하면 사용 중이지 않은 
+dangling image를 삭제함.
+
+```
+(참고) dangling image는 docker images 명령어의 출력결과에서
+이름이 <none>:<none>인 image를 뜻함.
+
+ # docker images
+```
+
+#### 2.5.4.3 CAdvisor
+
+CAdvisor는 google이 만든 container monitoring 도구로, container로서 간단히 설치할 수 있고
+container 별 실시간 자원 사용량 및 docker monitoring 정보 등을 시각화해서 보여줌.
+CAdvisor는 open source로서 Github에서 source code로 사용할 수 있으며 
+docker hub image로도 배포되고 있음.
+
+CAdvisor를 사용하기 위해 다음 명령어를 입력함. CAdvisor는 container의 agent의 형태로
+docker monitoring에 필요한 자료를 수집함.
+
+```
+# docker run \
+  --volume=/:/rootfs:ro \
+  --volume=/var/run/:/var/run:rw \
+  --volume=/sys:/sys:ro \
+  --volume=/var/lob/docker/:/var/lib/docker:ro \
+  --publish=8080:8080 \
+  --detach=true \
+  --name=cadvisor \
+  google/cadvisor:latest
+
+```
+
+image pull 및 container 생성이 완료되면 host의 8080번 port로 CAdvisor dash board에
+접근할 수 있음. web브라우저에서 아래와 같은 화면을 확인할 수 있다면 
+CAdvisor container가 정상적으로 설치 된 것.
+
+
+그림 2.80
+
+CAdvisor에서는 생성된 모든 container의 자원 사용량을 확인할 수 있을 뿐만 아니라
+docker daemon의 정보, 상태, host의 자원 사용량까지 한 번에 확인할 수 있음.
+
+IP 주소와 8080번 port로 접속했을 때 확인할 수 있는 page는 host의 process, 자원의 사용량 등을 보여줌
+
+[Subcontainer] 항목의 [/docker]를 클릭하면 docker daemon의 정보, container의 목록을 보여주는 page로
+이동함 [Subcontainer] 항목의 container 이름을 click하면 container의 자원 사용률도 실시간으로 확인할 수 있음.
+
+```
+(참고) CAdvisor의 dashboard는 60초간 monitoring 정보만 보여주지만 influxDB나 Premetheus
+등과 같이 사용하면 장기간의 monitoring 정보를 수집하고 분석할 수 있음.
+```
+
+그림 2.81
+
+여기서 짚고 넘어가야 할 부분은 CAdvisor를 생성할 때 option으로 설정한 host volume 공유(-v) 부분.
+CAdvisor는 이렇게 많은 정보를 어떻게 사용자에게 보여줄 수 있는 걸까?
+
+답은 docker daemon의 정보를 가져올 수 있는 host의 모든 directory를 CAdvisor container에 volume으로서
+mount했기 때문임. /var/run에는 docker를 local에서 제어하기 위한 unix socket이 있고,
+/sys에서는 docker container를 위한 cgroup 정보가 저장되어 있으며 /var/lib/docker에는 docker의
+container, image 등이 file로 존재함.
+
+
+```
+(참고)
+/sys/fs directort에는 docker container에게 격리된 자원을 제공하기 위한
+cgroup directory사 존재.
+이 directory에는 CPU, memory 등 container가 격리되어 할당받아야할 자원이 
+directory로서 다시 존재하고, 그 하위 directory에는 각 container에게 
+할당된 cgroup 정보가 존재함.
+
+# ls /sys/fs/cgroup/(cgroup 할당 자원)/docker/(container ID)/...
+
+다음 예에서 08d709...라는 ID를 가진 container의 memory cgroup 정보가 들어있는 
+directory를 볼 수 있음.
+관심이 있으면 한 번 cgroup directory를 자세히 살펴보는 것을 권장.
+
+# ls /sys/fs/cgroup/memory/docker/
+```
+
+그러나 CAdvisor는 단인 docker host만을 monitoring할 수 있다는 한계가 있음.
+여러 개의 host로 docker를 사용하고 있으며, 이를 기반으로 PaaS(Platform as a Sevice)
+같은 docker cluster를 구축했다면 CAdvisor가 용도에 맞지 않을지도 모름.
+
+
+#### 2.5.4.4 Docker Data Center(DDC)의 Univeral Control Plane(UCP)
+
+
