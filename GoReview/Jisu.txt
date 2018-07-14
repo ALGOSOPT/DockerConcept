@@ -27,3 +27,63 @@
 27장. 포인터 있지만 연산은 불가, struct 변수는 포인터 이용 접근 가능, 이때 실제 값도 바뀐다.
 28장. 구조체 리터럴 : 구조체의 필드에 값을 할당할때 {Name: value} 형식으로 할당할 수 있다. 필드 순서는 상관없음. & 사용시 포인터 리터럴 생성가능
 29장. new : 모든 필드가 0, nil 이 할당된 구조체 포인터 반환
+30장. 슬라이스: 배열값 point, 길이 가짐 p := []int{2, 3, 4} / len(p)
+31장. p[low:high] 를 통해 자를 수 있다. 배열 복사 가능(같은 배열을 가리킴)
+32장. make를 통해 슬라이스 생성 a := make([]int, 4, 10) -> 크기가 4이고 최대크기 10인 0으로 채워진 슬라이스 생성
+      cap(a) : 명령어를 통해 최대용량 확인가능
+33장. 빈슬라이스는 == nill / 길이와 최대크기 0
+34장. for => range 사용시 슬라이스, 맵 순회 for i, v := range pow {}
+35장. _ : 인덱스나 값 무시
+ for 인덱스, 값  := range pow {} : 값은 생략 가능, 인덱스는 _ 로 무시
+36장.
+ func Pic(dx, dy int) [][]uint8 {
+    a := make([][]uint8, dy)
+    b := make([]uint8, dx)
+    for i := range b {
+    	b[i] = uint8(i)
+    }
+    for i := range a {
+        a[i] = b
+    }
+    return a
+}
+37장. map : key, value 형태, make를 이용해 반드시 생성해야함 m = make(map[string]Vertex)
+      m["jjs"] = Vertex{11.0, 14.0}
+38장. 맵리터럴 : {key: value} 형식으로 값 할당 가능, but key를 반드시 지정해야한다.
+39장. 선언할때 쓴 타입명과 같은 타입의 값을 할당한다면, 타입명 생략 가능
+40장.
+    m["jjs"] = 1114
+    jisu := m["jjs"]
+    fmt.Println(jisu)
+    s, isExist := m["jjs"]
+    fmt.Println(s, isExist)
+
+    delete(m, "jjs")
+
+    s, isExist = m["jjs"]
+    fmt.Println(s, isExist)
+41장.
+func WordCount(s string) map[string]int {
+
+    a := make(map[string]int)
+    var str []string
+    str = strings.Fields(s)
+
+    for _, v:= range str {
+        a[v] += 1
+
+    }
+    //fmt.Println(str)
+    return a
+}
+42장. 리턴값이 있는 함수는 함수의 인자값이 될 수 있다.
+43장. 함수는 클로저이다. 클로저 : 내부함수가 외부함수의 context에 접근할 수 있는 것
+44장. 피보나치 클로져
+func fibonacci() func() int {
+    a := 1
+    b := 1
+    return func() int {
+        a, b = b, a+b
+        return a
+    }
+}
