@@ -3,3 +3,58 @@
 3장. go는 이미 설치 했어.
 4장. package. package는 header같은 것이다. fmt package는 print 함수들이 있는 것 같다.
 5장. import를 한 번만 써도 되게 Go는 만들어 놓았다. 
+6장. package에서 export 해 놓은 것을 import하면 사용할 수 있는데, Go에서는 첫 문자가 대문자로
+    시작하면 그 package를 사용하는 곳에서 접근 할 수 있는 exported name이 됨.
+7장. go에서 함수는 신기하게 parameter와 return 값의 type을 뒤에 씀.     
+8장. go에서 parameter의 type이 같으면 마지막 것만 써도 된다.
+9장. go에서는 함수가 여러개의 결과를 반환할 수 있다.
+     func swap(x, y string) (string, string)
+10장. 이름이 정해진 결과 - Named results. 
+      결과에 이름을 붙이면 반환 값을 지정하지 않은 return 문장으로
+      결과의 현재 값을 알아서 반환
+      ex) func split(sum int) (x, y int){ //여기서 x와 y가 return 값으로 지정됨.
+            x = sum* 4 / 9
+            y = sum - x
+            return          //자동으로 x와 y가 return됨.
+          }
+11장. 변수 선언을 위해서는 var라고 쓰고 뒤에 tpye을 적어준다.
+12장. 변수 선언과 함께 변수 각각을 초기화 할 수 있는데
+      초기화를 해서 변수 선언을 하면 type은 생략할 수 있음.
+      var x, y, z int = 1, 2, 3 //여기서 굳이 int는 안적어도 됨
+      var c, python, java = true, false, "no"!
+13장. 함수 내에서  := 을 사용하면 변수 선언할 때 굳이 type을 안적어도 됨.
+      하지만 중요한건 함수 밖에서는 := 선언을 사용할 수는 없음.
+14장. 상수는 const 키워드와 함께 변수처럼 선언.
+      상수는 char, string, bool, 숫자 타입으로 사용가능
+15장. 숫자가 커지면 정밀하게 표현이 된다? e+29뭐 이런식으로 표현이 가능하다 이 것 같은데.
+16장. go에서는 반복문이 for 밖에 없다(단 것도 while굳이 있어야 하나)
+      소괄호가 필요없고 중괄호는 꼭 있어야 한다.
+      for i := 0; i < 10; i++ {
+        sum += i
+      }
+17장. for문에서 초기화화 변하는 것이 없고 조건만 있어도 된다.
+18장. for문에서 조건문만 있으면 이 것이 while문! 
+19장. for문에서 조건문까지 생략하면 무한 loop가 된다.
+20장. if 문에서 조건 표현을 위한 소괄호는 생략하지만 실행을 위한 중괄호는 꼭 필요하다
+21장. if 에서 조건문 앞에 짧은 문장을 실행할 수 있는데,
+      이 짧은 문장에서 혹시 변수를 선언한다면 이 변수는 if 안쪽의 scope에서 
+      실행이 가능하다.
+      혹시나 하고 돌려봤는데 else에서도 사용 가능하다. 
+22장. 오 21장에서 else는 안되나 했었는데 여기서 바로나오넹 ㅎ_ㅎ
+23장. 연습. 
+24장. 기본 자료형 bool, string, int, int8, int16, int32, int64
+      byte == uint8, rune == int32, float32, float64, complex64, complex128
+      그런데 복소수를 어떻게 표현한다는 거지? 그냥 계산만 한다는 건가?
+25장. Structs. type 선언으로 struct의 이름을 지정할 수 있음.
+      type Sangjo stuct {
+        Amazing string
+        Fantastic string
+      }
+26장. struct의 entity들은 .으로 접근
+27장. Go에서는 pointer가 있는데 연산은 불가능함(아주 좋다!! 어딜 감히 메모리를 계산하려고)
+      (아! 아닌가 메모리를 연산 불가능 한 점이 시스템 프로그래밍을 할 수 없는 이유가 되는 건가?
+      
+28장. struct literals
+     {Name: value} 구문을 통해 field에 접근하여 할당할 수 있대.
+     &을 사용하면 pointer 생성까지 가능~
+29장. new 는 모든 field가 0이 할당된 포인터를 반환.
