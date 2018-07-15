@@ -1026,7 +1026,7 @@ snap shot의 기본 개념은 '원본 파일은 읽기 전용으로 사용하되
 
  
 
-그림 2.71
+![그림2.71](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.71.jpg)
 
  
 
@@ -1046,7 +1046,7 @@ App은 단순히 file system의 원본 파일에 접근해 file의 내용을 읽
 
  
 
-그림 2.72
+![그림2.72](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.72.jpg)
 
  
 
@@ -1060,7 +1060,7 @@ CoW는 snapshot의 파일에 쓰기 작업을 수행할 때 snapshot 공간에 �
 
  
 
-그림 2.73
+![그림2.73](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.73.jpg)
 
 RoW는 CoW와 다르게 한 번의 쓰기 작업만 일어남. 이는 file의 snapshot 공간에 복사하는 것이 아니라
 
@@ -1086,7 +1086,7 @@ snapshot 에 기록된 원본 파일은 snapshot 파일로 묶은(Freeze) 뒤 �
 
  
 
-그림 2.74
+![그림2.74](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.74.jpg)
 
  
 
@@ -1160,7 +1160,7 @@ nodev aufs
 
  
 
-그림 2.75
+![그림2.75](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.75.jpg)
 
  
 
@@ -1282,7 +1282,7 @@ Container와 image block의 정보는 metadata 파일에 저장됨.
 
  
 
-그림 2.76
+![그림2.76](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.76.jpg)
 
  
 
@@ -1510,7 +1510,7 @@ directory를 쉽게 확인할 수 있음.
 
  
 
-그림 2.77
+![그림2.77](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.77.jpg)
 
  
 
@@ -1696,7 +1696,7 @@ Docker가 정상적으로 Btrfs driver를 인식하고 사용하고 있음을 �
 
  
 
-그림 2.78
+![그림2.78](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.78.jpg)
 
  
 
@@ -1787,7 +1787,7 @@ Btrfs는 자체적으로 SSD에 최적화되어 있으며 대체적으로 우수
   DOCKER_OPTS="--storage-driver=zfs"
  ```
  
- 그림 2.79
+![그림2.79](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.79.jpg)
  
  ZFS도 용어의 차이만 있을 뿐 다른 storage driver와 유사한 구조를 띔. ZFS driver를 사용하면 
  image와  container layer는 ZFS 파일 시스템, ZFS clone, ZFS snapshot으로 구분되어 
@@ -1974,7 +1974,7 @@ image pull 및 container 생성이 완료되면 host의 8080번 port로 CAdvisor
 CAdvisor container가 정상적으로 설치 된 것.
 
 
-그림 2.80
+![그림2.80](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.80.jpg)
 
 CAdvisor에서는 생성된 모든 container의 자원 사용량을 확인할 수 있을 뿐만 아니라
 docker daemon의 정보, 상태, host의 자원 사용량까지 한 번에 확인할 수 있음.
@@ -1989,7 +1989,7 @@ IP 주소와 8080번 port로 접속했을 때 확인할 수 있는 page는 host�
 등과 같이 사용하면 장기간의 monitoring 정보를 수집하고 분석할 수 있음.
 ```
 
-그림 2.81
+![그림2.81](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/2.81.jpg)
 
 여기서 짚고 넘어가야 할 부분은 CAdvisor를 생성할 때 option으로 설정한 host volume 공유(-v) 부분.
 CAdvisor는 이렇게 많은 정보를 어떻게 사용자에게 보여줄 수 있는 걸까?
