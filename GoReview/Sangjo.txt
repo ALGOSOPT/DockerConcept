@@ -98,6 +98,29 @@
       키의 존재 여부 확인하기 elem, ok = m[key]
       여기서 ok는 값이 있으면 true, 없으면 false를 반환. 
 41장. 
+        package main
+
+        import (
+            "code.google.com/p/go-tour/wc"
+            "strings"
+        )
+
+        func WordCount(s string) map[string]int {
+
+            a := make(map[string]int)
+            var st []string
+            st = strings.Fields(s)
+
+            for _, v := range st{
+                a[v] += 1
+            }
+            return a
+        }
+
+        func main() {
+            wc.Test(WordCount)
+        }
+
 42장. 함수도 값이래. C에서는 함수는 pointer였는데.       
 43장. 함수는 클로져. 클로져 만의 sum 변수를 가진다.
 44장. 
