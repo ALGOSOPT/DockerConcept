@@ -98,4 +98,27 @@
       키의 존재 여부 확인하기 elem, ok = m[key]
       여기서 ok는 값이 있으면 true, 없으면 false를 반환. 
 41장. 
-      
+42장. 함수도 값이래. C에서는 함수는 pointer였는데.       
+43장. 함수는 클로져. 클로져 만의 sum 변수를 가진다.
+44장. 
+        package main
+
+        import "fmt"
+
+        // fibonacci is a function that returns
+        // a function that returns an int.
+        func fibonacci() func() int {
+            a := 0
+            b := 1
+            return func() int{
+                a, b = b, a + b
+                return b
+            }
+        }
+
+        func main() {
+            f := fibonacci()
+            for i := 0; i < 10; i++ {
+                fmt.Println(f())
+            }
+        }
