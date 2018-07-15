@@ -2025,3 +2025,117 @@ directory를 볼 수 있음.
 #### 2.5.4.4 Docker Data Center(DDC)의 Univeral Control Plane(UCP)
 
 
+여러개의 docker host로 이루어진 docker cluster를 monitoring하는 대부분의 
+도구는 유료.
+무료로 사용할 수 있는 도구도 있지만 실제 운영 환경을 위한 완벽한 지원과
+기능을 기대하려면 상용 솔루션을 이용하는 편이 나을 수도 있음.
+
+유료로 사용하는 솔루션에는 Universal Control Plane(UCP), Datadog,
+New Relic, Docker-Scout 등이 있으며 무료로 사용할 수 있는 방법으로는
+Shipyard, Graphite, Rancher Lab 등이 있음.
+
+```
+(참고) 이 책의 후반부에서 설명할 Rancher Lab은 cluster monitoring뿐
+아니라 PaaS를 구성하기 위한 기능들을 제공하는 무료 clustering 솔루션임.
+```
+
+Univercal Control Plane(UCP)는 Docker가 제공하는 Docker host Clustering 
+Monitoring 도구이며, 여러 개의 host를 등록하고 Container, image, resource 사용량 
+등을 확인할 수 있음. 한마디로 여러개의 Docker host를 관리하기 위한 종합 solution이라고
+생각하면 됨. Container, host 관리, 볼륨, 네트워크 생성과 삭제 등 docker를 제어할 수 있는
+대부분의 기능을 사용할 수 있기 때문에 대규모 cluster를 세세하게 관리해야하는 조직에
+적합한 monitoring 방법이라고 할 수 있음
+
+그러나  가장 중요한 사실은 UCP는 유료라는 점. 또한 UCP는 EE(Enterprise Edition) docker
+engine을 대상으로 하고 있음. 하지만 UCP를 간단히 test하는 용도라면 일반 Docker Engine도 
+사용할 수 있으며, UCP는 30일 체험한을 먼저 사용해 볼 수 있으므로 조직에서
+대규모 Docker Clustering을 고려하고 있다면 UCP를 무료로 사용해보고 난 뒤 결정해도 늦지 않음.
+
+---
+
+### 2.5.5 Remote API 라이브러리를 이용한 Docker 사용
+
+이 전의 2.5.3.1절 Docker Daemon 제어하기 : -H 에서 Docker를 원격으로 제어하는 방법을
+살펴 봄. 필요에 따라서는 -H 옵셔늘 원격의 Docker Daemon을 제어하기 위해 사용하는 것도
+좋은 방법이 될 수 있지만 Application이 수행해야 할 작업이 많거나 Application 초기화 등에
+복잡한 과정이 포함되어 있다면 Docker를 제어하는 Library를 사용해 이를 좀 더 쉽게
+해결할 수 있음.
+
+Docker를 제어하고 싶을 경우 일일이 Remote API에 대한 요청을 source code로 제작할 필요없이
+이미 Remote API를 wrapping해서 사용하기 쉽게 만들어 놓은 Library를 이용할 수 있음.
+
+이러한 Library 목록은 Docker SDK 페이지에서 확인할 수 있음. Docker에 기반 언어인 GO는 물론
+C#, C++, Python, Dart, PHP, java 등 많은 Library를 Open source로 사용할 수 있음.
+
+그림 2.83
+
+이 가운데 친숙한 언어를 선택해 라이브러리를 사용하면 됨. 이 번절에서는 Java, Python Library를 사용하는 
+방법에 대해 알아보자~
+
+#### 2.5.5.2 Python Library
+
+pip로 Docker Library를 설치
+```
+# pip install docker
+```
+
+라이브러리가 정상적으로 설치 되어는지 확인하기 위해 python shell을 실행해 
+Docker Client를 실행함.
+다음 예는 Unix Socker에 연결해 Docker Engine의 정보를 출력함. Remote API로 Docker Client
+를 사용하려면 base_url에 https://192.168.0.100:2375와 같이 docker daemon에
+접근할 수 있는 IP주소와 port번호를 입력함
+
+```
+# python 
+
+>>> import docker
+>>> client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+>>> clinet.info()
+```
+
+HTTPS를 사용하도록 TLS 보안이 적용된 Docker Daemon에 연결하려면 다음과 같이 TLSConfig 객체를 
+생성해 사용함.
+
+```
+# vi tls_docker_connect.pu
+
+import docker
+tls_congif = docker.tls.TLSConfig(
+  client_cert=('/root/.docker/cert.pem', '/root/.docker/key.pem')
+)
+
+client = docker.DockerClient(base_url='unix://var/run/docker.sock', tls = tls_config)
+print(client.info());
+```
+
+```
+# python tls_docker_connect.u
+```
+
+```
+(참고) 스스로 발급한 증명서를 사용해서 InsecureRequestWarning에 관련된 경고가
+출력된다면 TLSConfig 객체를 생성하기 전에 다음과 같은 내용을 추가해서 경고를
+출력하지 않게 할 수 있음
+import requests.packages.urllib3
+requests.packages.urllib3.disable_warnings()
+```
+
+Docker Client 객체를 생성했다면 이를 이용해 Docker Engine을 제어할 수 있음.
+다음 예시는 host의 80/tcp port를 container의 80번 포트에 연결하는 NginX
+container를 Detach 상태로 생성하고 시작하는 예.
+즉, 다음 내용은 Docker run -d -p 80:80 nginx와 동일
+```
+# vi run_nginx_container.py
+
+import docker 
+
+client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+container = client.containers.rn('nginx',
+                                  detach=True,
+                                  ports={'80/tcp':80})
+print("Created container is : {}, {}".format(container.name, container.id))
+```
+
+```
+# python run_nginx_container.py
+```
