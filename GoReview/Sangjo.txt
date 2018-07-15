@@ -58,3 +58,44 @@
      {Name: value} 구문을 통해 field에 접근하여 할당할 수 있대.
      &을 사용하면 pointer 생성까지 가능~
 29장. new 는 모든 field가 0이 할당된 포인터를 반환.
+30장. slice는 배열의 값을 가지고, 길이를 가지고 있음. 배열이랑 좀 비슷한듯
+      len 함수로 배열의 길이를 반환할 수 있다.
+      []Type의 형태로 선언
+31장. slice의 slicing. 슬라이스를 자를 수 있다. p[lo:hi]라고 하면 lo~hi-1까지의
+      배열을 반환한다.
+      그리고 p[:hi] 라고 하면 처음부터 hi - 1 까지.
+      p[lo:]이라고 하면 lo부터 끝까지 배열을 반환한다.
+32장. slice는  make함수로 만들 수 있다. 이렇게 생성된 slice는 0의 값을 
+     할당한 배열을 생성하고 그 것을 refer함
+     그리고 slice에서는 capacity의 개념이 있음.
+     len과는 다른 len의 한계. 이 것은 make함수로 인자를 3개 넣으면 만들 수 있다.
+     sl = make([]char, 10, 100)
+     이라고 선언하면 len이 10이고 cap이 100임.
+33장. slice의 zero value는 nil.
+      nil slice의 길이와 최대 크기는 0
+34장. for 반복문에서 range를 사용하면 slice를 순회할 수 있다.
+      for i, v:= range pow {
+      
+      ...
+      
+      }
+      라고 하면 i가 index, v가 value가 된다. 
+      여기서 물론 i만 써도 된다. 
+35장. 아 여기서 나오네!
+      i만 쓰고 싶으면 for i := range pow 라고 하면되고
+      value만 쓰고 싶으면
+      for _, value := range pow라고 하면 됨
+36장. 
+37장. Maps은 값에 key를 기정.
+      맵은 사용하기 전에 make를 반드시 명시해야함.
+      make를 수행하지 않은 nil에는 값을 할당할 수 없음.
+38장. Map literals. 리터럴이 구조체에다가 변수이름과 변수를 지정할 수 있음.
+      Map literal은 반드시 key를 지정해야함. 
+39장. 리터럴에서 타입명을 생략할 수도 있다고욤.
+40장. 맵에 요서 삽입 or 수정 m[key] = elem
+      값 가져요기 elem = m[key]
+      요소 지우기 delete(m, key)
+      키의 존재 여부 확인하기 elem, ok = m[key]
+      여기서 ok는 값이 있으면 true, 없으면 false를 반환. 
+41장. 
+      
