@@ -27,3 +27,87 @@
 27.포인터 - C랑 비슷하나 포인터 연산은 불가능, 당연하지만 포인터 이용접근은 실제 구조체에 영향 p := Vector{1, 2} q := &p
 28.구조체 생성에 이름을 줘도됨 - r = Vector{X: 1}
 29.new 는 모든 필드가 0(zero value)이 할당된 T 타입의 포인터 반환 t := new(T)
+===============================================================================================
+30. 슬라이스는 배열의 값을 가리키고(point) 배열의 길이를 가지고있다 []T로 선언
+31. 슬라이스는 자를 수 있다 당연히? s[lo:hi] lo에서 hi-1까지
+32. 슬라이스는 만들 수 있다 당연히? a := make([]int, 5, 10) 매개변수는 순서대로 타입, 길이, 용량(capacity)
+33. 슬라이스의 zero value는 nil (null x), nil 슬라이스의 길이는 당연히 0
+34. Range —> for 반복문에서 순회할 때 사용
+var pow = []int{1, 2, 3, 4, 5}
+for i, v := range pow {
+	…
+}
+35. _(언더바)를 이용하면 index나 value를 무시할 수 있다.
+var pow = []int{1, 2, 3, 4, 5}
+for _, v := range pow {
+	…
+}
+36. 연습^^^^^^^^^^
+37. 맵 —> key와 value를 저장하는 놈, 생성 할 때 make을 무조건 이용해야함
+var m map[string]Vertex
+m = make(map[string]Vertex)
+38. 맵 리터럴 : 다른 구조체들 처럼 값을 쭈우욱 쓸 수 있지만 key를 꼭 써줘야한다. like that
+var m = map[string]Vertex{
+    "Bell Labs": Vertex{
+        40.68433, -74.39967,
+    },
+    "Google": Vertex{
+        37.42202, -122.08408,
+    },
+}
+39. 맵 리터럴 시 타입을 생략할 수 있다 like that
+var m = map[string]Vertex{
+    "Bell Labs": {40.68433, -74.39967},
+    "Google":    {37.42202, -122.08408},
+}
+40. 맵에 요소 삽입 또는 수정
+m[key] = elem
+맵에 요소 가져오기
+elem = m[key]
+요소 지우기
+delete(m, key)
+존재 확인하기
+elem, ok = m[key]
+41. 연습^^^^^^^^^^^^
+42. 함수 값 : 함수도 값이다
+hypot := func(x, y float64) float64 {
+        return math.Sqrt(x*x + y*y)
+    }
+
+    fmt.Println(hypot(3, 4))
+func(x, y float64) float64 이라는 함수를 hypot 함수에 담는다
+43. 함수 클로져
+func adder() func(int) int {
+    sum := 0
+    return func(x int) int {
+        sum += x
+        return sum
+    }
+}
+
+func main() {
+    pos, neg := adder(), adder()
+    for i := 0; i < 10; i++ {
+        fmt.Println(
+            pos(i),
+            neg(-2*i),
+        )
+    }
+}
+함수 adder는 각 pos, neg 변수에 담긴다. 이 때 각 변수의 adder함수 내에 sum := 0이 실행된다.
+pos(i)가 불리게 되면 pos에 담긴 adder 함수의 반환 값은 func 함수가 호출된다. sum 값은 처응메 선언되었기 때문에 sum 값에 x를 더한 후 반환한다. neg 역시 마찬가지 방식으로 실행되고 여기서 각 변수에 sum은 공유되지 않는다.
+44. 연습~~~~~~~~
+func fibonacci() func() int {
+    a, b := 1, 1
+    return func() int {
+        a, b = b, a+b
+        return a
+    }
+}
+
+func main() {
+    f := fibonacci()
+    for i := 0; i < 10; i++ {
+        fmt.Println(f())
+    }
+}
