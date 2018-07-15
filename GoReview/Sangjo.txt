@@ -86,6 +86,26 @@
       value만 쓰고 싶으면
       for _, value := range pow라고 하면 됨
 36장. 
+        package main
+
+        import "code.google.com/p/go-tour/pic"
+
+        func Pic(dx, dy int) [][]uint8 {
+            a := make([][]uint8, dy)
+            b := make([]uint8, dx)
+            for i := range b{
+                b[i] =uint8(i)
+            }
+            for i := range a{
+                a[i] = b
+            }
+            return a
+        }
+
+        func main() {
+            pic.Show(Pic)
+        }
+
 37장. Maps은 값에 key를 기정.
       맵은 사용하기 전에 make를 반드시 명시해야함.
       make를 수행하지 않은 nil에는 값을 할당할 수 없음.
