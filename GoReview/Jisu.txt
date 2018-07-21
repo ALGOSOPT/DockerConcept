@@ -87,3 +87,83 @@ func fibonacci() func() int {
         return a
     }
 }
+45장. case 에서 실행을 마치면 알아서 break, fallthrough 키워드가 있을때는 자동 break 안함
+46장. case 에서 참인 조건을 찾으면 그 밑은 실행되지 않는다.
+47장. switch 조건 생략시 switch true와 같다.
+48장.
+package main
+import "fmt"
+import "math/cmplx"
+func Cbrt(x complex128) complex128 {
+    var z complex128 = complex128(1)
+    for i := 0; i < 10; i++ {
+    	z = z - (z * z * z - x) / (3 * z * z)
+    }
+    return z
+}
+func main() {
+    fmt.Println(Cbrt(2))
+    fmt.Println(cmplx.Pow(Cbrt(2),3))
+}
+49장. 메소드와 인터페이스
+50장. 클래스는 없지만 구조체에 메서드를 붙일 수 있다.
+메소드 리시버를 func 키워드와 메소드 이름 중간에 들어간다.
+51장. 메소드는 아무타입에나 붙일 수 있지만, 다른 패키지에 있는 타입, 기본 타입에는 못붙인다.
+52장. 메소드는 이름이 있는 타입의 포인터와 연결 가능 : 포인트 리시버
+사용이유 1. 값의 복사를 막기 위함, 2. 리시버 포인터가 가르키는 값을 수정하기 위함
+53장. 인터페이스 : 메소드의 집합으로 정의
+54장. 인터페이스의 메소드를 구현하면 인터페이스를 구현한 것이다 : 암시적 구현
+55장. 에러 : 내장 인터페이스 타입이다. error 출력 요청 받았을때 자동으로 이 메소드 호출한다.
+56장. package main
+import (
+    "fmt"
+)
+type ErrNegativeSqrt float64
+func (e ErrNegativeSqrt) Error() string {
+	return fmt.Sprintf("cannot Sqrt negative number: %f", e)
+}
+func Sqrt(f float64) (float64, error) {
+    z := float64(1)
+    if(f < 0) {
+    	return 0, ErrNegativeSqrt(f)
+    } else {
+        for i := 0; i < 10; i++ {
+     		z = z - (z * z * z - f) / (3 * z * z)
+        }
+        return z, nil
+    }
+}
+func main() {
+    fmt.Println(Sqrt(2))
+    fmt.Println(Sqrt(-2))
+}
+57장. 웹서버 :  http.Handler를 구현한 어떤 값을 사용하여 http 요청을 제공한다.
+58장.
+package main
+import (
+    "net/http"
+    "fmt"
+)
+type String string
+type Struct struct {
+	Greeting string
+	Punct    string
+	Who      string
+}
+func (h *Struct) ServeHTTP(
+    w http.ResponseWriter,
+    r *http.Request) {
+    fmt.Fprint(w, h.Greeting, h.Punct, h.Who)
+    fmt.Println(h.Greeting, h.Punct, h.Who)
+}
+func (h String) ServeHTTP(
+    w http.ResponseWriter,
+    r *http.Request) {
+    fmt.Fprint(w, h)
+}
+func main() {
+    http.Handle("/string", String("I'm a frayed knot."))
+	  http.Handle("/struct", &Struct{"Hello", ":", "Gophers!"})
+    http.ListenAndServe("localhost:4000", nil)
+
+}
