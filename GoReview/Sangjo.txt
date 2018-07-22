@@ -165,3 +165,88 @@
                 fmt.Println(f())
             }
         }
+45장. switch. case의 코드 실행을 마치면 알아서 break함. 
+46장. 각 switch의 조건은 위에서 아래로 판단함. 
+47장. 조건을 생략한 switch는 true 라서 무조건 들어간다.
+48장. 
+package main
+import "fmt"
+import "math/cmplx"
+func Cbrt(x complex128) complex128 {
+    var z complex128 = complex128(1)
+    for i := 0; i < 10; i++ {
+    	z = z - (z * z * z - x) / (3 * z * z)
+    }
+    return z
+}
+func main() {
+    fmt.Println(Cbrt(2))
+    fmt.Println(cmplx.Pow(Cbrt(2),3))
+}
+50장. 아주 중요. method를 struct에 붙일 수 있음. methon receiver는 func 키워드와
+      메소드 이름 사이에 인자로 들어간다. 이 것을 붙이면 이 struct 전용 함수가 된다는 뚯.
+51장. method를 struct 뿐 아니라 아무 type에도 붙일 수 있지만 다른 package에 있는 거랑
+        기본 타입만 아니면 아무 것에나 붙일 수있다. 
+52장. pointer receiver를 사용하는 이유는 1 메소드가 호출 될 때 마다 값이 복사되는 것을 방지하
+        기 위함. 2. 메소드에서 리시버 포인터가 가르키는 값을 수정하기 위함.
+53장. 인터페이스느 method의 집합으로 정의. 
+        interface안의 method는 그 이름과 반환값만 명시.
+        그리고 struct든 typedef를 통해 만든 type이든 interface안의 method를
+        receiver로 등록할 수 있으며, interface가 implment하는 곳은 main이나
+        다른 함수의 logic으로 등록 할 수 있다.
+54장. type이 interface의 method를 구현하면 interface를 구현한 것이 된다? 이 것이 뭔말이지
+55장. error. error 라고 하는 특수 interface가 있음. 여기에는 Error() string method가 들어 있음.
+      그래서 Error() string 이라고 하는 것을 receiver로 만들면 이 것을 쓸수있음.
+      여기 질문 있음. 왜 Error()이 호출되지?
+56장. 
+package main
+import (
+    "fmt"
+)
+type ErrNegativeSqrt float64
+func (e ErrNegativeSqrt) Error() string {
+	return fmt.Sprintf("cannot Sqrt negative number: %f", e)
+}
+func Sqrt(f float64) (float64, error) {
+    z := float64(1)
+    if(f < 0) {
+    	return 0, ErrNegativeSqrt(f)
+    } else {
+        for i := 0; i < 10; i++ {
+     		z = z - (z * z * z - f) / (3 * z * z)
+        }
+        return z, nil
+    }
+}
+func main() {
+    fmt.Println(Sqrt(2))
+    fmt.Println(Sqrt(-2))
+}
+57장. http와 관련된 requests를 제공하는 package가 http
+58장. 
+package main
+import (
+    "net/http"
+    "fmt"
+)
+type String string
+type Struct struct {
+	Greeting string
+	Punct    string
+	Who      string
+}
+func (h *Struct) ServeHTTP(
+    w http.ResponseWriter,
+    r *http.Request) {
+    fmt.Fprint(w, h.Greeting, h.Punct, h.Who)
+    fmt.Println(h.Greeting, h.Punct, h.Who)
+}
+func (h String) ServeHTTP(
+    w http.ResponseWriter,
+    r *http.Request) {
+    fmt.Fprint(w, h)
+}
+func main() {
+    http.Handle("/string", String("I'm a frayed knot."))
+	  http.Handle("/struct", &Struct{"Hello", ":", "Gophers!"})
+    http.ListenAndServe("localhost:4000", nil)
