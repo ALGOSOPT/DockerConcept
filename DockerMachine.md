@@ -26,7 +26,7 @@ AWS와 같은 cloud service를 이용할 수 있다면 운이 좋은 편.
 오류가 발생하기도 함.
 ```
 
-그림 4.1
+![그림4.1](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/4.1.jpg)
 
 이러한 불편함을 해소하기 위해 Docker Machine은 window나 mac os에서 손쉽게
 가상 machine을 생성하고 삭제하는 기능을 제공함. 가상화 도구로 직접 가장 머신을 생성해
@@ -70,14 +70,14 @@ Docker Quickstart Terminal이라는 shell 환경을 사용하는 것을 권장
 Docker Quickstart Terminal은 Docker Toolbox를 설치하면 자동으로 생성됨.
 
 
-그림 4.2
+![그림4.2](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/4.2.jpg)
 
 Quickstart Terminal을 실행하면 다음과 같은 출력 결과를 확인할 수 있는데, 
 이 것은 기본적으로 사용하도록 설정된 default라는 이름의 가상 머신을 생성하는 과정
 
 정상적으로 docker machine의 초기화 작업이 완료되었다면 다음과 같은 출력을 확인할 수 있음.
 
-그림 4.2
+![그림4.3](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/4.3.jpg)
 
 docker engine과 마찬가지로 version 명령어로 docker machine이 정상적으로 설치되었는지 확인함.
 docker machine의 명령어는 docker-machine으로 시작함.
@@ -133,14 +133,14 @@ docker machine은 등록된 docker server의 하나를 선택해 제어하는 �
 선택된 docker server가  default 가상 머신이므로 브라우저로 접속해 확인할 수 있음.
 브라우저에서 192.168.99.100:8080으로 접근하면 nginx 서버가 작동 중인 것을 확인할 수 있음.
 
-그림 4.4
+![그림4.4](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/4.4.jpg)
 
 docker-machine ssh 명령어로 특정 서버에 접속할 수 있음. 보통 docker machine에서 docker 
 server를 관리하므로 직접 SSH로 접속할 경우가 많지 않지만 docker server에 error가 발생하는 등 
 직접 server에 접속할 일이 생길 때 주로 사용함. docker server에서 docker machine으로 돌아오려면 
 exit을 입력함.
 
-그림 4.5
+![그림4.5](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/4.5.jpg)
 
 ---
 ### 4.2.2 virtual box를 이용한 local virtual machine 생성
