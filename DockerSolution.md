@@ -429,4 +429,9 @@ spec:
 따라서 파일 확장자는 yaml, yml 둘 중 어떤 것을 사용해도 상관 없음.
 ```
 
+위 예제는 7.1.3.1절 Deployment 생성에서 Deployment를 생성할 때 사용한 run 명령어를
+변환한 것임. kind 항목에서 resource의 종류를 Deployment로 정의하고 metadata에 이름을 지정했습니다.
 
+spec 항목은 생성될 포드의 설정을 정의하는데, 여기서 눈여겨봐야 할 항목은 labels의 app:my-deploy임.
+
+라벨은 키-값의 쌍으로 이루여 있으며, 생성된 포드의 라벨에 app의 data를 my-deploy로 설정.
