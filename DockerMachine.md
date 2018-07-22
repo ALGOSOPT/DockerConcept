@@ -229,3 +229,82 @@ docker machine에서 사용 가능한 모든 cloud 서비스를 확인하고 싶
 docker machine driver 항목을 참고하길 바람.
 
 ---
+
+### 4.2.4 On Premise 환경에 연결
+
+Docker Machine은 각종 cloud 서비스에 연결해 docker server를 생성할 수 있지만
+On premise환경의 서버에 연결해 사용할 수도 있음. 기존의 개발 server에 docker engine을
+설치하고 싶다면 docker machine에 등록한 뒤 가상 machine이나 cloud의 docker server와 같이
+docker machine에서 사용하면 됨.
+
+on premise  서버에 연결하는 것은 cloud service에 연결했던 것과는 다른 방식.
+
+그림 4.12
+
+[1] 연결하려는 server에 docker 명령어를 사용할 수 있는 즉, root나 sudo 권한을 가진 계정이고
+server에는 docker engine이 설치 되지 않은 상태여야 함.
+
+[2] 계정의 ~/.ssh directory에 ssh key 쌍 파일이 있어야 하며, 이 키 쌍 파일은 docker machine을 사용
+하는 host에도 있어야 함.
+
+[3] docker machine 은 해당 SSH 키와 계정으로 server에 접속해 docker engine을 설치한 뒤 제어 함.
+
+```
+(참고) 여기서 설명하는 예제는 on premise 서버의 root 계정에 접근해 docker 를 제어하며
+이 root 계정은 비밀번호를 사용하고 있다고 가정. 그러나 실제로는 root 계정을 사용하기보다는
+별도의 계정에 sudo 권한을 부여해 사용하는 것이 바람직함. docker server에 존재하는 다른 
+계정을 사용해 docker machine에서 접근하려면 이번 절의 예제에서 사용하는 root를 다른 계정으로
+변경해 사용하길 바람. 단 해당 계정에는 비밀번호를 입력하지 않아도 되는 sudo 권한을 부여되어 있어야
+함. 특정 계정에 이 권한을 부여하려면 visudo 명령어를 입력한 뒤 아래와 같은 내용을 추가 함
+
+# visudo
+...
+myusername ALL=(ALL) NOPASSWD: ALL
+...
+```
+
+docker machine을 사용하는 Quickstart Terminal에서 ssh-keygen을 입력해 새로운 key 쌍을 생성함.
+key를 저장할 위치와 key의 비밀번호를 설정할 수 있는데 이 예제에서는 어떠한 설정도 하지 않고
+기본 설정을 따름.
+```
+# ssh-keygen
+
+```
+docker machine이 존재하는 host의 ~/.ssh/ 디렉터리에 id_rsa와 id_rsa.pub 파일이 생성됨.
+이 file들을 docker machine에 등록하려는 docker server에 복사해야 함. 다음 명령어를 입력하면
+SSH 키 파일들이 docker server root계정의 ~/.shh/ directory에 복사됨. 진행 과정에서 연결 확인
+여부를 물어보면 'yes' 를 입력하고 root계정의 비밀번호를 입력함
+
+```
+$ ssh-copy-id root@(docker server IP)
+```
+
+key file 복사가 완료도면 다음 명령어를 입력해 docker server를 등록함. --driver 옵션에 generic을
+설저하고 --generic-ip-address에 docker server의 IP 주소를 설정함.
+```
+# docker-machine create --driver generic --generic-ip-address (IP) myserver
+```
+
+--driver generic으로 docker server를 등록할 경우, docker machine은 기본적으로 root계정으로 접근함.
+docker server로 접근할 때 root 계정이 아닌 다른 계정으로 변경하려면 --generic-ssh-user 옵션을 사용하면
+됨. 또한 docker machine이 존재하는 host에서 docker server에 접근할 SSH 키 파일의 기본 위치는 ~/.ssh 이지만
+--generic-ssh-key 옵션으로 key file이 존재하는 directory 위치를 지정할 수 있음.
+
+```
+# docker-machine create --driver generic \
+--generic-ip-address (IP) \
+--generic-ssh-user myuser \
+--generic-ssh-key ~/.Download/my_key.pub \
+myserver
+```
+
+정상적으로 server가 등록되면 해당 서버에 자동으로 docker engine을 설치한 뒤 TLS연결을 설정함.
+등록된 server는 다른 docker server와 같이 docker machine의 명령어로 제어할 수 있음.
+
+```
+# docker-machine create --driver generic \
+--generic-ip-address (IP) \
+--generic-ssh-user myusername \
+myserver
+```
+
