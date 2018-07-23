@@ -435,3 +435,247 @@ spec:
 spec 항목은 생성될 포드의 설정을 정의하는데, 여기서 눈여겨봐야 할 항목은 labels의 app:my-deploy임.
 
 라벨은 키-값의 쌍으로 이루여 있으며, 생성된 포드의 라벨에 app의 data를 my-deploy로 설정.
+라벨의 키와 값은 아래에서 생설할 서비스에서 다시 사용되므로 기억해두자.
+
+그 밖의 설정은 이전과 같음.
+
+
+위 파일을 deployment로 생성하려면 kubectl create -f [파일이름]을 입력함.
+
+
+```
+# kubectl create -f my-deploy.yaml
+```
+
+그러나 아직은 deployment를 통해 포드를 생성만 했을 뿐 외부에 노출하지 않았음.
+포드를 외부에 노출하려면 서비스를 생성해야함. 마찬가지로 서비스도 yaml 파일로 작성해
+생성할 것이므로 다음 내용을 my-service.yaml 파일로 저장ㅎ.ㅁ
+
+```
+예제 7.2 my-service.yaml
+$ vi my-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service-name
+spec:
+  ports:
+    - name: my-deploy-svc
+      port: 8080
+      targetPort: 80
+  tpye: NodePort
+  selector:
+    app: my-deploy
+```
+
+예제 7.1과 다르게 kind 항목에 resource의 종류를 Service로 명시했고, metadata에 서비스의
+이름을 설정함. 여기서 맨 마지마게 있는 selector 항목의 app: my-deploy 는 어떤 포드를 선택해
+이 service의 외부에 노출할 것인지를 선택함. 예제 7.1 의 my-deploy.yaml 파일에서 
+deployment의 라벨을 app:my-deploy로 설정했으므로 이 deployment에서 생성된 포드는 위에서
+생성한 서비스에 의해 외부에 노출될 대상이 됨. 
+
+즉, 라벨이 외부로 노출할 선택자로 작용하는 것임.
+
+ 
+ 
+ type: NodePort는 모든 node에서 해당 서비스에 접근할 수 있게 설정함. 
+ 이 것은 스웜모드의 ingress 네트워크와 유사하게 어느 노드에 접근해도 같은 서비스를 받을 수 있도록
+ 설정함.
+ targetPort:80은 container 외부에 노출할 port를 의미함.
+ 
+ 
+ 마찬가지로 위 파일도 kubectl create 명령어로 서비스를 생성함.
+ 
+ ```
+ # kubectl create -f my-service.yaml
+ ```
+ 
+ 
+ 서비스를 생성한 뒤 서비스의 목록을 확인하면 각 노드에서 접근할 수 있는 포트를
+ 확인할 수 있음. 서비스의 다음 예제에서는 kubernetes의 각 node의 IP 주소와
+ 30091 포트로 포드에 접근할 수 있음.
+ 
+ ```
+ # kubectl get service
+ ```
+ 
+ 
+ ```
+ 각 node의 IP 주소는 kubectl describe 명령어오 확인할 수 있음.
+ describe는 특정 resource의 자세한 정보를 출력함.
+ 
+ # kubectl describe nodes | grep Addr
+ ```
+ 
+ 외부에서 각 node의 공인 IP와 서비스의 port로 접근하려면 다음과 같이 container의 host 이름을
+ 확인할 수 있음. 
+ 
+ service는 자동으로 pod 사이에 round robin 방식의 load balancing을 적용하므로 
+ 브라우저로 접근할 때 마다 다른 host 이름이 출력되는 것을 알 수 있음.
+ 
+ 
+ 그림 7.10
+ 
+ 
+ 
+ ```
+ GCE에서 kubernetes를 사용하고 있다면 service의 port로 접근하기 위해 방화벽
+ 규칙에서 특정 port를 개방해야함. page의 하단의 googlle cloud shell terminal에서
+ 다음 명령어를 입력하면 port를 개방할 수 있으며, 개방하려는 port의 번호를
+ --allow 옵션에 적절히 입력함
+ 
+ # gcloud compute firewall-rules create my-rule-name --allow tcp:32697
+ ```
+ 
+ service로 접근하기 위한 port를 서비스의 yml 파일에 지정하지 않으면
+ kubernetes는 server에 30000번부터 32767번까지의 port중 하나를 선택해
+ 임의로 service에 할당하지만, nodePort 항목을 명시하면 serivce가 외부로
+ 노출될 port를 직접 지정할 수 있음.
+ 
+ 
+ 다음 예시에서는 service에 접근하기 위한 port를 31000번으로 지정함.
+ 
+ 단, 이 port 또한 30000번부터 32767번 port 중 하나를 선택해야함.
+ 
+ ```
+ # vi my-service.yaml
+ 
+ ...
+ spec:
+  ports:
+    - name : my-deploy-svc
+      port:8080
+      targetPort: 80
+        nodePort:31000
+  type: NodePort
+  
+ ```
+ 
+ cloud platform에서 kubernetes를 사용하고 있다면 service의 type을 LoadBalancer
+ 로 설정해 사용할 수 있음.
+ 
+ LoadBalancer의  Type의 서비스는 각 포드에 접근하기 위한 외부 IP를 별도로 할당하고
+ 서비스에 접근하는 연결을 분배함.
+ 
+ 이를 test하기 위해 앞에서 생성한 service를 먼저 삭제함.
+ 
+ ```
+ # kubectl delete svc my-service-nameservice
+ ```
+ 
+ 위에서 작성했던 my-service.yaml 파일을 다음과 같이 수정함. 
+ 변경된 내용은 type:LoadBalancer 임.
+ 
+ ```
+ 예제 7.3 수정된 my-service.yaml
+ 
+ # vi my-service.yaml
+ ...
+ 
+      port : 8080
+    targetPort : 80
+  type : LoadBalancer
+  selector :
+...
+ ```
+ 
+ 수정된 파일로 service를 생성함.
+ 
+ ```
+ # kubectl create -f my-service.yaml
+ ```
+ 
+ 서비스를 생성한 직후 kubectl로 서비스 목록을 확인했을 떄 EXTERNAL-IP가 
+ <pending>이면 IP가 할당 중이라는 의미이며, 시간이 조금 지나면 외부 IP가
+  할당되는 것을 확인할 수 있음.
+  단, NodePort와는 다르게 무작위로 할당되는 port가 아닌 yaml 파일에서
+  port항목에 정의한 port로 접근해야함. 
+  
+  
+  이 예제에서는 EXTERNAL-IP와 8080으로 서비스에 접근함.
+  
+  ```
+  # kubectl get svc my-service-name
+  
+  # kubectl get svc
+  
+  ```
+  
+  EXTERNAL-IP에 할당된 IP와 8080번 port로 접근하면 하나의 외부 IP로
+  loadbalancing된 Web App을 사용할 수 있음.
+  
+  
+  그림 7.11
+  
+  ---
+  
+  #### 7.1.3.3 Kubernetes Dashboard
+  
+  지금까지 kubectl 명령어로 kubernetes의 기능을 사용했음.
+  command line으로 kubernetes 의 기능을 사용하는 것이 강력하고
+  편리할 수 있지만 kubectl 명령어에 어느정도 익숙해지고 나면 
+  
+  dashboard를 사용하는 것도 나쁘지 않음. dashboard는 kubernetes의 기능을 웹 UI로 제공할 
+  뿐 아니라 clustering monitoring 정보도 함께 보여주기 때문에
+  
+  kubernetes를 사용하려고 한다면 dashboard도 함께 설치하는 것이 좋음.
+  
+  
+  kubernetes의 dashboard는 container로 제공되므로 쉽게 생성할 수 있음.
+  
+  직접 kubernetes를 설치했거나 Minikube를 사용하고 있다면 dashboard는 기본적으로
+  설치되어 있지 않지만 GCE와 같은 cloud platform에서
+  kubernetes cluster를 생성했다면 deployment나 replication controller
+  또는 replica 셋으로 dashboard가 미리 생성되어 있을 수 있음.
+  
+  ```
+  # kubectl get rs --namespace kube-system | grep dashboard
+  ```
+  
+  ```
+  kubectl get pods 명령어를 실행해도 dashboard pod는 출력되지 않음.
+  pod와 service는 namespace를 지정해 용도별로 그룹화 할 수 있는데,
+  kubernetes cluster 구동에 관련된 resource는 kube-system
+  네임스페이스로 지정해 kubectl get pods 명령어에도 출력되지 않도록 설정됨.
+  ```
+  
+  GCE에서 쿠버네티스를 사용하고 있다면 웹 콘솔 창에서 kubectl cluster-info
+  명령어로  dashboard의 주소를 확인할 수 있음.
+  웹 브라우저에서 이 주소로 접근해 kubernetes의 dashboard에 접속할 수 있음.
+  
+  
+```
+# kubectl cluster-info
+```
+
+
+로그인에 쓰이는 기본 계정은 admind이며 비밀번호는 다음 명령어로 확인할 수 있음
+cluster 이름과 zone 이름은 container cluster 목록에서 확인할 수 있으며
+아래 예시에서는 us-centrall-a 가 zone의 이름ㅇ.ㅁ
+
+
+그림 7.12
+
+```
+# gcloud container clusters decribe (클러스터 이름) --zone (zone 이름) | grep
+```
+
+클라우스 플랫폼이 아닌 on premise 환경에서 kubernetes를 설치했다면 다음 명령어를
+입력해 대시보드를 설치함. yaml 파일은 local 뿐만 아니라 외부 URL에서 내려 받아 사용할 수 도
+있으므로 다음 명령어로 dashboard를 생성함.
+
+```
+# kubectl create -f \
+주소 블라블라  p332
+```
+
+위 명령어로 생성된 dashboard pod의 service type은 NodePort로 지정되어 있으므로 모든
+node에서 접근할 수 있음. 다음 예제에서는 모든 node의 314989번 port로 접근하면 
+dashboard에 접속할 수 잇음.
+
+```
+# kubectl get service --namespace kube-system
+```
+
+그림 7.13
