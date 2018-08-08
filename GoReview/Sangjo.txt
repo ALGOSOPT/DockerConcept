@@ -250,3 +250,150 @@ func main() {
     http.Handle("/string", String("I'm a frayed knot."))
 	  http.Handle("/struct", &Struct{"Hello", ":", "Gophers!"})
     http.ListenAndServe("localhost:4000", nil)
+
+59장. Image. package image.
+60장. 
+61장. 
+62장. 동시성
+63장. Goroutine은 Go runtime에 의해 관리되는 경량 Thread.
+	go f(x,y,z) 는 새로운 Goroutine을 시작시킴.
+	goroutine은 동일한 주소 공간에서 실행되므로 공유되는 자원으로의 접근은 
+	동기화가 되어야 함.
+	
+	import (
+		"fmt"
+		"time"
+	)
+	
+	func say(s string) {
+		for i := 0; i < 5; i++ {
+			time.Sleep(100 * time.Millisecond)
+			fmt.Println(s)
+		}
+	}
+	
+	func main() {
+		go say("world")
+		say("hello")
+	}
+	
+64장 Channels
+	channel 은 channel 연산자 <- 를 이용해 값을 주고 받을 수 있는 type이 존재하는
+	pipe.
+	
+	ch <- v //v를 ch로 보냄
+	v := 	//ch로부터 값을 받아서
+		//v로 넘김.
+		
+	map이나 slice처럼 채널은 사용되기 전에 생성되어야 함.
+	ch := make(chan int)
+	
+	기본적으로, 송/수신은 상대편이 준비될 때 까지 블록됨.
+	이런 특성이 Goroutine이 명시적인 lock이나 조건 없이도 동기화
+	될 수 있도록 도움.
+
+package main
+
+import "fmt"
+
+func sum(a [] int, c chan int) {
+	sum := 0
+	for _, v:= range a{
+		sum += v
+	}
+	c <- sum // send sum to c
+}
+
+func main(){
+
+	a := []int{7, 2, 8, -9, 4, 0}
+	
+	c := make(chan int)
+	
+	go sum(a[:len(a)/2], c)
+	go sum(a[len(a)/2:], c)
+	x, y := <-c. <-c //receive from c
+
+	fmt.Println(x, y, x+y)
+}
+
+여기서 x에는 -5가 y에는 y 17이 들어가게 된다.
+이 말은 같은  channel이면 stack으로 data가 들어가고 나가게 된다는 뜻이다.
+
+
+65장. channel은 buffering 될 수 있음. make에 두번째 인자로 
+	buffer 용량을 넣음으로써 해당 용량만큼 버퍼링되는 채널을
+	생성할 수 있음.
+	
+	ch := make(chan int, 100)
+
+	버퍼링 되는 channel로의 송신은 buffer가 꽉 찰 때까지 블록됨.
+	수신은 buffer가 빌 때 블록됨.
+
+66장. Range와 Close
+	
+	보내는 쪽이 channel로 더 이상 보낼 값이 없다는 것을 알리기 위해
+	channel을 close할 수 있음.
+
+	받는 쪽은 두번 째 인자로 채널이 닫혔는지를 test할 수 있음.
+	
+	보내는 쪽만 채널을 닫을 수 있음. 
+	수신측에서는 채널을 닫을 수는 없다.
+	
+	
+67장.  select 구문은 goroutine이 다수의 통신 동작으로부터 수행 준비를 기다릴 수 있게 함.
+	select는 case 구문으로 받는 통신 동작들 중 하나가 수행될 수 있을 때까지 수행을
+	블록함. 
+
+	다수의 채널이 동시에 준비되면 그 중에 하나를 무작위로 선택함.
+
+package main
+
+import "fmt"
+
+func fibonacci(c, quit chan int){
+	x, y := 0, 1
+	for {
+		select {
+		case c <- x:
+			x, y = y, x + y
+		case <- quit:
+			fmt.Println("quit")
+			return
+		}
+	}
+}
+
+func main(){
+	c := make(chan int)
+	quit := make(chan int)
+	
+	go func() {
+		for i := 0; i < 10; i++ {
+			fmt.Println(<-c)
+		}
+		quit <- 0
+	}()
+
+	fibonacci(c, quit)
+}
+
+
+68장. select의  default 케이스
+
+	select 의 default case는 현재 수행 준비가 완료된 case가 없을 때 수행 됨.
+	blocking 없이 보내고 받고를 할 때 default case를 사용하셈.
+
+	select {
+	case i := <-c:
+	
+	default:
+	}
+
+
+69장.
+70장.
+71장
+72장.
+	
+	
