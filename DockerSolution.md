@@ -47,7 +47,7 @@ ochestration 도구 .
 PaaS 환경을 구성할 수 있는 안정적인 환경을 만들어준다는 것. 그래서 일반적으로 Kubernetes를 기반으로 플랫폼
 을 구성하는데  대표적인 예가 redhat의 openshift.
 
-그림 7.1
+![그림7.1](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.1.jpg)
 
 
 openshift는 container 기반의 web service를 제공하는 PaaS로서 PHP, JBoss 등 각종 Web service의
@@ -143,13 +143,13 @@ kubernetes를 이용해 각 가상 머신에 container를 생성해 사용하는
 Google Container Engine Site에 접속해 login 하면 다음과 같은 화면을 볼 수 있음.
 Container Cluster 만들기를 클릭해 새로운 cluster를 생성하는 화면으로 이동함.
 
-그림 7.2
+![그림7.2](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.2.jpg)
 
 cluster를 생성하는 화면에서 [크기]항목에 가상 머신의 개수를 입력해
 kubernetes  cluster의 크기를 설정할 수 있음. 이 예제에서는 그림 7.3과 같이 [크기]항목에
 3을 입력한 뒤 하단의 [만들기]를 클릭해 kubernetes cluster를 생성함.
 
-그림 7.3
+![그림7.3](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.3.jpg)
 
 
 
@@ -157,13 +157,13 @@ kubernetes  cluster의 크기를 설정할 수 있음. 이 예제에서는 그�
 Cluster 생성이 완료되면 그림 7.4와 같이 생성 완료 표시가 나타남. Cluster 생성이 완료된 후 
 해당 cluster의 [연결]버튼을 클릭함.
 
-그림 7.4
+![그림7.4](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.4.jpg)
 
 
 gcloud container cluster ... 명령어를 복사함. 이 명령어는 생성한 kubernetes cluster에 
 접근하는 데 사용함.
 
-그림 7.5
+![그림7.5](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.5.jpg)
 
 
 
@@ -171,12 +171,12 @@ gcloud container cluster ... 명령어를 복사함. 이 명령어는 생성한 
 
 오른쪽 위의 command 라인 아이콘을 click해 kubectl을 사용할 수 있는 google cloud shell을 활성화함.
 
-그림 7.6
+![그림7.6](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.6.jpg)
 
 브라우저 하단에 terminal 형태의 shell이 활성화되면 위에서 복사한 명령어를 shell에 입력함
 
 
-그림 7.7
+![그림7.8](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.8.jpg)
 
 
 kubectl get nodes 명령어로 kubernetes cluster에서 사용 가능한 server를 확인함.
@@ -298,7 +298,7 @@ kubernetes cluster를 동작시키기 위한 정보 저장, data 동기화 등�
 관리하기 위한 agent로서 동작함.
 
 
-그림 7.9
+![그림7.9](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.9.jpg)
 
 각 Kubernetes 노드는 1개 이상의 container를 Pods라는 단위로 생성함.
 
@@ -515,7 +515,7 @@ deployment의 라벨을 app:my-deploy로 설정했으므로 이 deployment에서
  브라우저로 접근할 때 마다 다른 host 이름이 출력되는 것을 알 수 있음.
  
  
- 그림 7.10
+![그림7.10](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.10.jpg)
  
  
  
@@ -606,7 +606,7 @@ deployment의 라벨을 app:my-deploy로 설정했으므로 이 deployment에서
   loadbalancing된 Web App을 사용할 수 있음.
   
   
-  그림 7.11
+  ![그림7.11](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.11.jpg)
   
   ---
   
@@ -654,8 +654,7 @@ deployment의 라벨을 app:my-deploy로 설정했으므로 이 deployment에서
 cluster 이름과 zone 이름은 container cluster 목록에서 확인할 수 있으며
 아래 예시에서는 us-centrall-a 가 zone의 이름ㅇ.ㅁ
 
-
-그림 7.12
+![그림7.12](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.12.jpg)
 
 ```
 # gcloud container clusters decribe (클러스터 이름) --zone (zone 이름) | grep
@@ -678,4 +677,4 @@ dashboard에 접속할 수 잇음.
 # kubectl get service --namespace kube-system
 ```
 
-그림 7.13
+![그림7.13](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/7.13.jpg)
