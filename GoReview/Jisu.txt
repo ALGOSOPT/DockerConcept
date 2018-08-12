@@ -167,3 +167,91 @@ func main() {
     http.ListenAndServe("localhost:4000", nil)
 
 }
+59장. package image는 interface 정의
+60장.
+package main
+
+import (
+    "code.google.com/p/go-tour/pic"
+    "image"
+    "image/color"
+)
+
+type Image struct{
+    w int
+    h int
+}
+
+func (img Image) ColorModel() color.Model {
+    return color.RGBAModel
+}
+
+func (img Image) Bounds() image.Rectangle {
+    return image.Rect(0, 0, img.w, img.h)
+}
+
+func (img Image) At(x, y int) color.Color {
+    xx := uint8(x)
+    yy := uint8(y)
+    v := xx+yy
+    return color.RGBA{v, v, 255, 255}
+}
+
+
+func main() {
+    m := Image{256, 64}
+    pic.ShowImage(m)
+}
+61장. ???? 무슨말인지 모르겠음....
+62장. 동시성
+63장. 고루틴 : Go 런타임에 의해 관리되는 경량 쓰레드, 같은 주소 공간을 사용하므로 동기화되어야 한다.
+64장. 채널 : 타입이 존재하는 파이프, <- 사용, make를 통해 생성
+65장. 버퍼링 되는 채널 : make의 두번째 인자로 버퍼 용, 버퍼가 넘치면 데드락
+66장. 송신측은 더이상 보낼 값이 없을때 채널을 close 할 수 있다. 수신측에서는 채널 닫지 못함
+67장. select : 고루틴에 여러자기 수행동작을 넣는것, select case, 여러개의 채널이 동시에 준비되면 무작위 실행
+68장. select default : 수행 준비된 케이스가 없을 때 수행, 비동기적 송수신할때 이용
+69장. 동등한 이진트리
+70장.
+package main
+
+import "code.google.com/p/go-tour/tree"
+import "fmt"
+
+func Walk(t *tree.Tree, ch chan int) {
+    if t.Left != nil {
+    	Walk(t.Left, ch)
+    }
+    ch <- t.Value
+    if t.Right != nil {
+        Walk(t.Right, ch)
+    }
+}
+
+// Same determines whether the trees
+// t1 and t2 contain the same values.
+func Same(t1, t2 *tree.Tree) bool {
+	c1 := make(chan int)
+	c2 := make(chan int)
+	go Walk(t1, c1)
+	go Walk(t2, c2)
+	for i := range c1 {
+		if i != <-c2 {
+			return false
+		}
+	}
+	return true
+}
+
+func main() {
+    c := make(chan int)
+	go Walk(tree.New(1), c)
+	for i := range c {
+		fmt.Println(i)
+	}
+
+	fmt.Println(Same(tree.New(1), tree.New(1)))
+	fmt.Println(Same(tree.New(1), tree.New(2)))
+}
+// deadlock
+71장. ?????
+72장. 더 살펴볼 ref
