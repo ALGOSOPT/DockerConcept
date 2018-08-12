@@ -71,7 +71,7 @@ Container를 생성함. 따라서 Docker Compose를 사용하려면 가장 먼�
 
 
 
-그림 5.1
+![그림5.1](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/5.1.jpg)
 
 #### 5.3.1.1 docker-compose.yml 작성과 활용
 
@@ -169,7 +169,7 @@ docker compose는 기본적으로 docker-compose.yml 파일이 위치한 directo
 project 이름으로 사용함. project의 이름은 docker-compose.yml 파일이 저장된 directory의 이름에
 따를 것
 
-그림 5.2
+![그림5.2](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/5.2.jpg)
 
 그림 5.2와 같이 하나의 project는 여러개의 service로 구성되고 각 서비스는 여러개의 컨테이너로
 구성됨. swarm 모드에서의 서비스와 마찬가지로 하나의 서비스에는 여러개의 container가 존재할 수 있으므로
@@ -522,7 +522,7 @@ container 전부가 이 bridge 타입의 network를 사용함. 서비스 내의 
 --net-alias가 service의 이름을 갖도록 자동으로 설정되므로 이 network가 
 속한 container는 service의 이름으로 service 내의 container에 접근할 수 있음.
 
-그림 5.3
+![그림5.3](https://github.com/ALGOSOPT/DockerConcept/blob/master/picture/5.3.jpg)
 
 예를 들어 web 서비스와 mysql 서비스가 각기 존재할 때 web 서비스의 container가 mysql
 라는 host 이름으로 접근하면 mysql service의 container 중 하나의 IP로 변환(resolve)

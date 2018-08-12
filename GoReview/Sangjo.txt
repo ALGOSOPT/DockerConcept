@@ -165,3 +165,235 @@
                 fmt.Println(f())
             }
         }
+45장. switch. case의 코드 실행을 마치면 알아서 break함. 
+46장. 각 switch의 조건은 위에서 아래로 판단함. 
+47장. 조건을 생략한 switch는 true 라서 무조건 들어간다.
+48장. 
+package main
+import "fmt"
+import "math/cmplx"
+func Cbrt(x complex128) complex128 {
+    var z complex128 = complex128(1)
+    for i := 0; i < 10; i++ {
+    	z = z - (z * z * z - x) / (3 * z * z)
+    }
+    return z
+}
+func main() {
+    fmt.Println(Cbrt(2))
+    fmt.Println(cmplx.Pow(Cbrt(2),3))
+}
+50장. 아주 중요. method를 struct에 붙일 수 있음. methon receiver는 func 키워드와
+      메소드 이름 사이에 인자로 들어간다. 이 것을 붙이면 이 struct 전용 함수가 된다는 뚯.
+51장. method를 struct 뿐 아니라 아무 type에도 붙일 수 있지만 다른 package에 있는 거랑
+        기본 타입만 아니면 아무 것에나 붙일 수있다. 
+52장. pointer receiver를 사용하는 이유는 1 메소드가 호출 될 때 마다 값이 복사되는 것을 방지하
+        기 위함. 2. 메소드에서 리시버 포인터가 가르키는 값을 수정하기 위함.
+53장. 인터페이스느 method의 집합으로 정의. 
+        interface안의 method는 그 이름과 반환값만 명시.
+        그리고 struct든 typedef를 통해 만든 type이든 interface안의 method를
+        receiver로 등록할 수 있으며, interface가 implment하는 곳은 main이나
+        다른 함수의 logic으로 등록 할 수 있다.
+54장. type이 interface의 method를 구현하면 interface를 구현한 것이 된다? 이 것이 뭔말이지
+55장. error. error 라고 하는 특수 interface가 있음. 여기에는 Error() string method가 들어 있음.
+      그래서 Error() string 이라고 하는 것을 receiver로 만들면 이 것을 쓸수있음.
+      여기 질문 있음. 왜 Error()이 호출되지?
+56장. 
+package main
+import (
+    "fmt"
+)
+type ErrNegativeSqrt float64
+func (e ErrNegativeSqrt) Error() string {
+	return fmt.Sprintf("cannot Sqrt negative number: %f", e)
+}
+func Sqrt(f float64) (float64, error) {
+    z := float64(1)
+    if(f < 0) {
+    	return 0, ErrNegativeSqrt(f)
+    } else {
+        for i := 0; i < 10; i++ {
+     		z = z - (z * z * z - f) / (3 * z * z)
+        }
+        return z, nil
+    }
+}
+func main() {
+    fmt.Println(Sqrt(2))
+    fmt.Println(Sqrt(-2))
+}
+57장. http와 관련된 requests를 제공하는 package가 http
+58장. 
+package main
+import (
+    "net/http"
+    "fmt"
+)
+type String string
+type Struct struct {
+	Greeting string
+	Punct    string
+	Who      string
+}
+func (h *Struct) ServeHTTP(
+    w http.ResponseWriter,
+    r *http.Request) {
+    fmt.Fprint(w, h.Greeting, h.Punct, h.Who)
+    fmt.Println(h.Greeting, h.Punct, h.Who)
+}
+func (h String) ServeHTTP(
+    w http.ResponseWriter,
+    r *http.Request) {
+    fmt.Fprint(w, h)
+}
+func main() {
+    http.Handle("/string", String("I'm a frayed knot."))
+	  http.Handle("/struct", &Struct{"Hello", ":", "Gophers!"})
+    http.ListenAndServe("localhost:4000", nil)
+
+59장. Image. package image.
+60장. 
+61장. 
+62장. 동시성
+63장. Goroutine은 Go runtime에 의해 관리되는 경량 Thread.
+	go f(x,y,z) 는 새로운 Goroutine을 시작시킴.
+	goroutine은 동일한 주소 공간에서 실행되므로 공유되는 자원으로의 접근은 
+	동기화가 되어야 함.
+	
+	import (
+		"fmt"
+		"time"
+	)
+	
+	func say(s string) {
+		for i := 0; i < 5; i++ {
+			time.Sleep(100 * time.Millisecond)
+			fmt.Println(s)
+		}
+	}
+	
+	func main() {
+		go say("world")
+		say("hello")
+	}
+	
+64장 Channels
+	channel 은 channel 연산자 <- 를 이용해 값을 주고 받을 수 있는 type이 존재하는
+	pipe.
+	
+	ch <- v //v를 ch로 보냄
+	v := 	//ch로부터 값을 받아서
+		//v로 넘김.
+		
+	map이나 slice처럼 채널은 사용되기 전에 생성되어야 함.
+	ch := make(chan int)
+	
+	기본적으로, 송/수신은 상대편이 준비될 때 까지 블록됨.
+	이런 특성이 Goroutine이 명시적인 lock이나 조건 없이도 동기화
+	될 수 있도록 도움.
+
+package main
+
+import "fmt"
+
+func sum(a [] int, c chan int) {
+	sum := 0
+	for _, v:= range a{
+		sum += v
+	}
+	c <- sum // send sum to c
+}
+
+func main(){
+
+	a := []int{7, 2, 8, -9, 4, 0}
+	
+	c := make(chan int)
+	
+	go sum(a[:len(a)/2], c)
+	go sum(a[len(a)/2:], c)
+	x, y := <-c. <-c //receive from c
+
+	fmt.Println(x, y, x+y)
+}
+
+여기서 x에는 -5가 y에는 y 17이 들어가게 된다.
+이 말은 같은  channel이면 stack으로 data가 들어가고 나가게 된다는 뜻이다.
+
+
+65장. channel은 buffering 될 수 있음. make에 두번째 인자로 
+	buffer 용량을 넣음으로써 해당 용량만큼 버퍼링되는 채널을
+	생성할 수 있음.
+	
+	ch := make(chan int, 100)
+
+	버퍼링 되는 channel로의 송신은 buffer가 꽉 찰 때까지 블록됨.
+	수신은 buffer가 빌 때 블록됨.
+
+66장. Range와 Close
+	
+	보내는 쪽이 channel로 더 이상 보낼 값이 없다는 것을 알리기 위해
+	channel을 close할 수 있음.
+
+	받는 쪽은 두번 째 인자로 채널이 닫혔는지를 test할 수 있음.
+	
+	보내는 쪽만 채널을 닫을 수 있음. 
+	수신측에서는 채널을 닫을 수는 없다.
+	
+	
+67장.  select 구문은 goroutine이 다수의 통신 동작으로부터 수행 준비를 기다릴 수 있게 함.
+	select는 case 구문으로 받는 통신 동작들 중 하나가 수행될 수 있을 때까지 수행을
+	블록함. 
+
+	다수의 채널이 동시에 준비되면 그 중에 하나를 무작위로 선택함.
+
+package main
+
+import "fmt"
+
+func fibonacci(c, quit chan int){
+	x, y := 0, 1
+	for {
+		select {
+		case c <- x:
+			x, y = y, x + y
+		case <- quit:
+			fmt.Println("quit")
+			return
+		}
+	}
+}
+
+func main(){
+	c := make(chan int)
+	quit := make(chan int)
+	
+	go func() {
+		for i := 0; i < 10; i++ {
+			fmt.Println(<-c)
+		}
+		quit <- 0
+	}()
+
+	fibonacci(c, quit)
+}
+
+
+68장. select의  default 케이스
+
+	select 의 default case는 현재 수행 준비가 완료된 case가 없을 때 수행 됨.
+	blocking 없이 보내고 받고를 할 때 default case를 사용하셈.
+
+	select {
+	case i := <-c:
+	
+	default:
+	}
+
+
+69장.
+70장.
+71장
+72장.
+	
+	
